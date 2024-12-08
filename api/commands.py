@@ -9,7 +9,7 @@ from db.dbscript import *
 from timeModule.timeflow import update_date
 from dotenv import load_dotenv
 
-load_dotenv()  # Load environment variables from .env file
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='/', intents=intents)
@@ -62,4 +62,7 @@ async def delete_bonus_command(ctx, bonus: str):
 async def insert_bonus_command(startTime: str, multiplier: int):
     update_date(startTime, multiplier)
 
+discord_token = os.getenv('DISCORD_TOKEN')
+if discord_token is None:
+    raise ValueError("DISCORD_TOKEN environment variable not set")
 bot.run(os.getenv('DISCORD_TOKEN'))
