@@ -1,3 +1,4 @@
+__package__ = "db"
 import sqlite3
 
 def create_tables(conn):

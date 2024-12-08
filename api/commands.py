@@ -1,13 +1,18 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import discord
+from discord import Intents
 from discord.ext import commands
 import sqlite3
 from db.dbscript import *
-from time.timeflow import update_date
+from timeModule.timeflow import update_date
 from dotenv import load_dotenv
-import os
 
 load_dotenv()  # Load environment variables from .env file
-bot = commands.Bot(command_prefix='/')
+intents = discord.Intents.default()
+intents.message_content = True
+bot = commands.Bot(command_prefix='/', intents=intents)
 
 @bot.command(name='insert_bonus')
 async def insert_bonus_command(ctx, bonus: str, value: str, nationId: str, startYear: str, endYear: str, event: str):
