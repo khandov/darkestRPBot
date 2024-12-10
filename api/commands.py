@@ -4,8 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import discord
 from discord import Intents
 from discord.ext import commands
-import sqlite3
-from db.dbscript import *
+import db.dbscript as db
 from timeModule.timeflow import update_date
 from dotenv import load_dotenv
 
@@ -16,9 +15,9 @@ bot = commands.Bot(command_prefix='/', intents=intents)
 
 @bot.command(name='insert_bonus')
 async def insert_bonus_command(ctx, bonus: str, value: str, nationId: str, startYear: str, endYear: str, event: str):
-    conn = sqlite3.connect(':memory:')
+    conn = db.create_conn()
     try:
-        insert_bonus(conn, bonus, value, nationId, startYear, endYear, event)
+        db.insert_bonus(conn, bonus, value, nationId, startYear, endYear, event)
         await ctx.send(f"Bonus '{bonus}' inserted successfully.")
     except Exception as e:
         await ctx.send(f"An error occurred: {e}")
@@ -27,9 +26,9 @@ async def insert_bonus_command(ctx, bonus: str, value: str, nationId: str, start
 
 @bot.command(name='read_bonus')
 async def read_bonus_command(ctx):
-    conn = sqlite3.connect(':memory:')
+    conn = db.create_conn()
     try:
-        bonuses = read_bonus(conn)
+        bonuses = db.read_bonus(conn)
         await ctx.send(f"Bonuses: {bonuses}")
     except Exception as e:
         await ctx.send(f"An error occurred: {e}")
@@ -38,9 +37,9 @@ async def read_bonus_command(ctx):
 
 @bot.command(name='update_bonus')
 async def update_bonus_command(ctx, bonus: str, value: str, nationId: str, startYear: str, endYear: str, event: str):
-    conn = sqlite3.connect(':memory:')
+    conn = db.create_conn()
     try:
-        update_bonus(conn, bonus, value, nationId, startYear, endYear, event)
+        db.update_bonus(conn, bonus, value, nationId, startYear, endYear, event)
         await ctx.send(f"Bonus '{bonus}' updated successfully.")
     except Exception as e:
         await ctx.send(f"An error occurred: {e}")
@@ -49,9 +48,9 @@ async def update_bonus_command(ctx, bonus: str, value: str, nationId: str, start
 
 @bot.command(name='delete_bonus')
 async def delete_bonus_command(ctx, bonus: str):
-    conn = sqlite3.connect(':memory:')
+    conn = db.create_conn()
     try:
-        delete_bonus(conn, bonus)
+        db.delete_bonus(conn, bonus)
         await ctx.send(f"Bonus '{bonus}' deleted successfully.")
     except Exception as e:
         await ctx.send(f"An error occurred: {e}")
