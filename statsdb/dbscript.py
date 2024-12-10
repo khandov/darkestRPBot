@@ -195,6 +195,18 @@ def initiate():
         with create_conn() as conn:
             drop_tables(conn)
             create_tables(conn)
+            insert_nation(conn, "USA", 331002651, 21427700, 0.71, 2.27)
+            insert_nation(conn, "China", 1439323776, 14342900, 0.39, 6.1)
+            insert_tech(conn, "F-22", "Fighter", "Stealth", "2005-01-01", "2005-01-01", 1)
+            insert_tech(conn, "J-20", "Fighter", "Stealth", "2011-01-01", "2011-01-01", 2)
+            insert_bonus(conn, "GDP", "-1000000", 1, "2021-01-01", "2021-12-31", "Covid-19")
+            insert_bonus(conn, "Population", "-1000000", 1, "2021-01-01", "2021-12-31", "Covid-19")
+            insert_bonus(conn, "GDP", "-1000000", 2, "2021-01-01", "2021-12-31", "Covid-19")
+            insert_bonus(conn, "Population", "-2000000", 2, "2021-01-01", "2021-12-31", "Covid-19")
+            print(read_bonus(conn))
+            print(read_nation(conn))
+            print(read_tech(conn))
+
 
     except Exception as e:
         print("Failed to open database:",e)
