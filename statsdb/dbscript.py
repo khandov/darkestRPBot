@@ -17,29 +17,19 @@ def create_conn():
 def drop_tables(conn):
     cursor = conn.cursor()
     cursor.execute("""
-                        
         DROP TABLE IF EXISTS bonus
-        DROP TABLE IF EXISTS nation
+    """)
+    cursor.execute("""
         DROP TABLE IF EXISTS tech
+    """)
+    cursor.execute("""
+        DROP TABLE IF EXISTS nation
     """)
     conn.commit()
 
 def create_tables(conn):
     try:
         cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS bonus (
-                nationId INT AUTO_INCREMENT,
-                bonusId INT,  
-                PRIMARY KEY (nationId, bonusId),   
-                bonus TEXT,
-                value TEXT,
-                startYear DATE,
-                endYear DATE,
-                event TEXT
-                FOREIGN KEY (nationId) REFERENCES nation(nationId),         
-            )
-        """)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS nation (
                 nationId INT AUTO_INCREMENT PRIMARY KEY,
@@ -51,56 +41,151 @@ def create_tables(conn):
             )
         """)
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS tech (
+            CREATE TABLE IF NOT EXISTS bonus (
+                bonusId INT AUTO_INCREMENT PRIMARY KEY,
+                bonus VARCHAR(255),
+                value TEXT,
                 nationId INT,
-                techId INT AUTO_INCREMENT,
-                PRIMARY KEY (nationId, bonusId),
-                FOREIGN KEY (nationId) REFERENCES nation(nationId),  
+                startYear DATE,
+                endYear DATE,
+                event TEXT,
+                FOREIGN KEY (nationId) REFERENCES nation(nationId)
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS tech (
+                techId INT AUTO_INCREMENT PRIMARY KEY,
+                techName TEXT,
                 techType TEXT,
                 techTemplate TEXT,
                 yearDesigned DATE,
                 yearInService DATE,
                 nationID INT,
+                FOREIGN KEY (nationID) REFERENCES nation(nationId)
             )
         """)
         conn.commit()
-    except :
-        print(f"Error")
+    except Exception as e:
+        print(f"Error: {e}")
 
+def insert_nation(conn, nationName, population, gdp, popGrowth, gdpGrowth):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO nation (nationName, population, gdp, popGrowth, gdpGrowth)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (nationName, population, gdp, popGrowth, gdpGrowth))
+        conn.commit()
+    except Exception as e:
+        print(f"Error: {e}")
+
+def read_nation(conn):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM nation")
+        return cursor.fetchall()
+    except Exception as e:
+        print(f"Error: {e}")
+
+def update_nation(conn, nationId, nationName, population, gdp, popGrowth, gdpGrowth):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE nation
+            SET nationName = %s, population = %s, gdp = %s, popGrowth = %s, gdpGrowth = %s
+            WHERE nationId = %s
+        """, (nationName, population, gdp, popGrowth, gdpGrowth, nationId))
+        conn.commit()
+    except Exception as e:
+        print(f"Error: {e}")
+
+def delete_nation(conn, nationId):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM nation WHERE nationId = %s", (nationId,))
+        conn.commit()
+    except Exception as e:
+        print(f"Error: {e}")
+
+# CRUD functions for the tech table
+def insert_tech(conn, techName, techType, techTemplate, yearDesigned, yearInService, nationID):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO tech (techName, techType, techTemplate, yearDesigned, yearInService, nationID)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (techName, techType, techTemplate, yearDesigned, yearInService, nationID))
+        conn.commit()
+    except Exception as e:
+        print(f"Error: {e}")
+
+def read_tech(conn):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM tech")
+        return cursor.fetchall()
+    except Exception as e:
+        print(f"Error: {e}")
+
+def update_tech(conn, techId, techName, techType, techTemplate, yearDesigned, yearInService, nationID):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE tech
+            SET techName = %s, techType = %s, techTemplate = %s, yearDesigned = %s, yearInService = %s, nationID = %s
+            WHERE techId = %s
+        """, (techName, techType, techTemplate, yearDesigned, yearInService, nationID, techId))
+        conn.commit()
+    except Exception as e:
+        print(f"Error: {e}")
+
+def delete_tech(conn, techId):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM tech WHERE techId = %s", (techId,))
+        conn.commit()
+    except Exception as e:
+        print(f"Error: {e}")
 
 def insert_bonus(conn, bonus, value, nationId, startYear, endYear, event):
     try:
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO bonus (bonus, value, nationId, startYear, endYear, event) VALUES (?, ?, ?, ?, ?, ?)", 
-                    (bonus, value, nationId, startYear, endYear, event))
+        cursor.execute("""
+            INSERT INTO bonus (bonus, value, nationId, startYear, endYear, event)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (bonus, value, nationId, startYear, endYear, event))
         conn.commit()
-    except:
-        errorHandler("insert") 
+    except Exception as e:
+        print(f"Error: {e}")
 
 def read_bonus(conn):
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM bonus")
         return cursor.fetchall()
-    except:
-            errorHandler("read")
+    except Exception as e:
+        print(f"Error: {e}")
 
 def update_bonus(conn, bonus, value, nationId, startYear, endYear, event):
     try:
         cursor = conn.cursor()
-        cursor.execute("UPDATE bonus SET value = ?, nationId = ?, startYear = ?, endYear = ?, event = ? WHERE bonus = ?", 
-                       (value, nationId, startYear, endYear, event, bonus))
+        cursor.execute("""
+            UPDATE bonus
+            SET value = %s, nationId = %s, startYear = %s, endYear = %s, event = %s
+            WHERE bonus = %s
+        """, (value, nationId, startYear, endYear, event, bonus))
         conn.commit()
-    except:
-        errorHandler("update")
+    except Exception as e:
+        print(f"Error: {e}")
 
 def delete_bonus(conn, bonus):
     try:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM bonus WHERE bonus = ?", (bonus,))
+        cursor.execute("DELETE FROM bonus WHERE bonus = %s", (bonus,))
         conn.commit()
-    except:
-        errorHandler("delete")
+    except Exception as e:
+        print(f"Error: {e}")
+
 
 def errorHandler(place):
     print("At"+ place + " An error occurred:")
@@ -110,15 +195,6 @@ def initiate():
         with create_conn() as conn:
             drop_tables(conn)
             create_tables(conn)
-            # Example CRUD operations
-            insert_bonus(conn, 'Holiday Bonus', '1000', 'USA', '2023-01-01', '2023-12-31', 'New Year')
-            bonuses = read_bonus(conn)
-            print("Bonuses:", bonuses)
-            update_bonus(conn, 'Holiday Bonus', '1500', 'USA', '2023-01-01', '2023-12-31', 'New Year')
-            bonuses = read_bonus(conn)
-            print("Updated Bonuses:", bonuses)
-            delete_bonus(conn, 'Holiday Bonus')
-            bonuses = read_bonus(conn)
-            print("Bonuses after deletion:", bonuses)
-    except:
-        print("Failed to open database:")
+
+    except Exception as e:
+        print("Failed to open database:",e)

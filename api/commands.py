@@ -56,6 +56,94 @@ async def delete_bonus_command(ctx, bonus: str):
         await ctx.send(f"An error occurred: {e}")
     finally:
         conn.close()
+        
+@bot.command(name='insert_nation')
+async def insert_nation_command(ctx, nationName: str, population: int, gdp: int, popGrowth: float, gdpGrowth: float):
+    conn = db.create_conn()
+    try:
+        db.insert_nation(conn, nationName, population, gdp, popGrowth, gdpGrowth)
+        await ctx.send(f"Nation '{nationName}' inserted successfully.")
+    except Exception as e:
+        await ctx.send(f"An error occurred: {e}")
+    finally:
+        conn.close()
+
+@bot.command(name='read_nation')
+async def read_nation_command(ctx):
+    conn = db.create_conn()
+    try:
+        nations = db.read_nation(conn)
+        await ctx.send(f"Nations: {nations}")
+    except Exception as e:
+        await ctx.send(f"An error occurred: {e}")
+    finally:
+        conn.close()
+
+@bot.command(name='update_nation')
+async def update_nation_command(ctx, nationId: int, nationName: str, population: int, gdp: int, popGrowth: float, gdpGrowth: float):
+    conn = db.create_conn()
+    try:
+        db.update_nation(conn, nationId, nationName, population, gdp, popGrowth, gdpGrowth)
+        await ctx.send(f"Nation '{nationName}' updated successfully.")
+    except Exception as e:
+        await ctx.send(f"An error occurred: {e}")
+    finally:
+        conn.close()
+
+@bot.command(name='delete_nation')
+async def delete_nation_command(ctx, nationId: int):
+    conn = db.create_conn()
+    try:
+        db.delete_nation(conn, nationId)
+        await ctx.send(f"Nation '{nationId}' deleted successfully.")
+    except Exception as e:
+        await ctx.send(f"An error occurred: {e}")
+    finally:
+        conn.close()
+
+@bot.command(name='insert_tech')
+async def insert_tech_command(ctx, techName: str, techType: str, techTemplate: str, yearDesigned: str, yearInService: str, nationID: int):
+    conn = db.create_conn()
+    try:
+        db.insert_tech(conn, techName, techType, techTemplate, yearDesigned, yearInService, nationID)
+        await ctx.send(f"Tech '{techName}' inserted successfully.")
+    except Exception as e:
+        await ctx.send(f"An error occurred: {e}")
+    finally:
+        conn.close()
+
+@bot.command(name='read_tech')
+async def read_tech_command(ctx):
+    conn = db.create_conn()
+    try:
+        techs = db.read_tech(conn)
+        await ctx.send(f"Techs: {techs}")
+    except Exception as e:
+        await ctx.send(f"An error occurred: {e}")
+    finally:
+        conn.close()
+
+@bot.command(name='update_tech')
+async def update_tech_command(ctx, techId: int, techName: str, techType: str, techTemplate: str, yearDesigned: str, yearInService: str, nationID: int):
+    conn = db.create_conn()
+    try:
+        db.update_tech(conn, techId, techName, techType, techTemplate, yearDesigned, yearInService, nationID)
+        await ctx.send(f"Tech '{techName}' updated successfully.")
+    except Exception as e:
+        await ctx.send(f"An error occurred: {e}")
+    finally:
+        conn.close()
+
+@bot.command(name='delete_tech')
+async def delete_tech_command(ctx, techId: int):
+    conn = db.create_conn()
+    try:
+        db.delete_tech(conn, techId)
+        await ctx.send(f"Tech '{techId}' deleted successfully.")
+    except Exception as e:
+        await ctx.send(f"An error occurred: {e}")
+    finally:
+        conn.close()
 
 @bot.command(name='update_time')
 async def insert_bonus_command(startTime: str, multiplier: int):
