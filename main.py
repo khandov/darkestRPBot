@@ -1,5 +1,5 @@
 import subprocess
-import db.dbscript as db
+import statsdb.dbscript as db
 
 def run_script(script_name):
     subprocess.run(['python', script_name])

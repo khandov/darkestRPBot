@@ -1,36 +1,29 @@
 __package__ = "db"
 
 import mysql.connector
-from mysql.connector import Error
-
 
 def create_conn():
-    try:
-        conn = mysql.connector.connect(
-            host='mysql.db.bot-hosting.net',
-            port=3306,
-            user='u230695_eE0kHIvC39',
-            password='iw59b.Sx+Q@j91^AzDEHv9t^',
-            database='s230695_dhDB'
-        )
-        if conn.is_connected():
-            return conn
-    except Error as e:
-        print(f"Error: {e}")
-        return None
+    conn = mysql.connector.connect(
+        host='mysql.db.bot-hosting.net',
+        port=3306,
+        user='u230695_eE0kHIvC39',
+        password='iw59b.Sx+Q@j91^AzDEHv9t^',
+        database='s230695_dhDB'
+    )
+    if conn.is_connected():
+        return conn
+
+    return None
 def drop_tables(conn):
-    try:
-        cursor = conn.cursor()
-        cursor.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
                         
-                DROP TABLE IF EXISTS bonus
-                DROP TABLE IF EXISTS nation
-                DROP TABLE IF EXISTS tech
-        """)
-        conn.commit()
-    except Error as e:
-        print(f"Error: {e}")
-    
+        DROP TABLE IF EXISTS bonus
+        DROP TABLE IF EXISTS nation
+        DROP TABLE IF EXISTS tech
+    """)
+    conn.commit()
+
 def create_tables(conn):
     try:
         cursor = conn.cursor()
@@ -71,8 +64,8 @@ def create_tables(conn):
             )
         """)
         conn.commit()
-    except Error as e:
-        print(f"Error: {e}")
+    except :
+        print(f"Error")
 
 
 def insert_bonus(conn, bonus, value, nationId, startYear, endYear, event):
@@ -81,16 +74,16 @@ def insert_bonus(conn, bonus, value, nationId, startYear, endYear, event):
         cursor.execute("INSERT INTO bonus (bonus, value, nationId, startYear, endYear, event) VALUES (?, ?, ?, ?, ?, ?)", 
                     (bonus, value, nationId, startYear, endYear, event))
         conn.commit()
-    except Error as e:
-        errorHandler(e, "insert") 
+    except:
+        errorHandler("insert") 
 
 def read_bonus(conn):
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM bonus")
         return cursor.fetchall()
-    except Error as e:
-            errorHandler(e, "read")
+    except:
+            errorHandler("read")
 
 def update_bonus(conn, bonus, value, nationId, startYear, endYear, event):
     try:
@@ -98,19 +91,19 @@ def update_bonus(conn, bonus, value, nationId, startYear, endYear, event):
         cursor.execute("UPDATE bonus SET value = ?, nationId = ?, startYear = ?, endYear = ?, event = ? WHERE bonus = ?", 
                        (value, nationId, startYear, endYear, event, bonus))
         conn.commit()
-    except Error as e:
-        errorHandler(e, "update")
+    except:
+        errorHandler("update")
 
 def delete_bonus(conn, bonus):
     try:
         cursor = conn.cursor()
         cursor.execute("DELETE FROM bonus WHERE bonus = ?", (bonus,))
         conn.commit()
-    except Error as e:
-        errorHandler(e, "delete")
+    except:
+        errorHandler("delete")
 
-def errorHandler(e, place):
-    print("At"+ place + " An error occurred:", e.args)
+def errorHandler(place):
+    print("At"+ place + " An error occurred:")
 
 def initiate():    
     try:
@@ -127,5 +120,5 @@ def initiate():
             delete_bonus(conn, 'Holiday Bonus')
             bonuses = read_bonus(conn)
             print("Bonuses after deletion:", bonuses)
-    except Error as e:
-        print("Failed to open database:", e)
+    except:
+        print("Failed to open database:")
