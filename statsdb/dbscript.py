@@ -120,7 +120,7 @@ def delete_nation(conn, nationName):
 def insert_tech(conn, techName, techType, techTemplate, yearDesigned, yearInService, nationName):
     try:
         cursor = conn.cursor()
-        nationId = read_one_nation(conn, nationName).nationId
+        nationId = read_one_nation(conn, nationName)[0][0]
         cursor.execute("""
             INSERT INTO tech (techName, techType, techTemplate, yearDesigned, yearInService, nationID)
             VALUES (%s, %s, %s, %s, %s, %s)
@@ -168,7 +168,7 @@ def delete_tech(conn, techName):
 def insert_bonus(conn, bonus, value, nationName, startYear, endYear, post):
     try:
         cursor = conn.cursor()
-        nationId = read_one_nation(conn, nationName).nationId
+        nationId = read_one_nation(conn, nationName)[0][0]
         cursor.execute("""
             INSERT INTO bonus (bonus, value, nationId, startYear, endYear, post)
             VALUES (%s, %s, %s, %s, %s, %s)
