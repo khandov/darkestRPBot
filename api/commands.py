@@ -11,13 +11,13 @@ from dotenv import load_dotenv
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix='/', intents=intents)
+bot = discord.Bot()
 
 def my_roles(roles, which_role):
     roles = [role.name for role in roles]
     return which_role in roles
 
-@bot.hybrid_command(name='insert_bonus', description='Insert a bonus into the database')
+@bot.command(name='insert_bonus', description='Insert a bonus into the database')
 async def insert_bonus_command(ctx, bonus: str, value: str, nationName: str, startYear: str, endYear: str, event: str = None):
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
@@ -31,7 +31,7 @@ async def insert_bonus_command(ctx, bonus: str, value: str, nationName: str, sta
     else:
         await ctx.send("You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
-@bot.hybrid_command(name='read_bonus', description='Read bonuses of a nation from the database. Leave nation field blank to get list of all nations')
+@bot.command(name='read_bonus', description='Read bonuses of a nation from the database. Leave nation field blank to get list of all nations')
 async def read_bonus_command(ctx, nation: str = None):
     conn = db.create_conn()
     try:
@@ -47,7 +47,7 @@ async def read_bonus_command(ctx, nation: str = None):
         conn.close()
 
         
-@bot.hybrid_command(name='update_bonus', description='Update a bonus in the database')
+@bot.command(name='update_bonus', description='Update a bonus in the database')
 async def update_bonus_command(ctx, bonus: str, value: str, nationId: str, startYear: str, endYear: str, event: str = None):
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
@@ -61,7 +61,7 @@ async def update_bonus_command(ctx, bonus: str, value: str, nationId: str, start
     else:
         await ctx.send("You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
-@bot.hybrid_command(name='delete_bonus', description='Delete a bonus from the database')
+@bot.command(name='delete_bonus', description='Delete a bonus from the database')
 async def delete_bonus_command(ctx, bonus: str):
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
@@ -75,7 +75,7 @@ async def delete_bonus_command(ctx, bonus: str):
     else:
         await ctx.send("You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
-@bot.hybrid_command(name='read_all_nation', description='read every nation')
+@bot.command(name='read_all_nation', description='read every nation')
 async def read_all_nation_command(ctx):
     conn = db.create_conn()
     try:
@@ -86,7 +86,7 @@ async def read_all_nation_command(ctx):
     finally:
         conn.close()
 
-@bot.hybrid_command(name='read_one_nation', description='read a single nation by nation name')
+@bot.command(name='read_one_nation', description='read a single nation by nation name')
 async def read_nation_command(ctx, nationName: str):
     conn = db.create_conn()
     try:
@@ -97,7 +97,7 @@ async def read_nation_command(ctx, nationName: str):
     finally:
         conn.close()
     
-@bot.hybrid_command(name='insert_nation', description='Insert a nation into the database')
+@bot.command(name='insert_nation', description='Insert a nation into the database')
 async def insert_nation_command(ctx, nationName: str, population: int, gdp: int, popGrowth: float, gdpGrowth: float):
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
@@ -111,7 +111,7 @@ async def insert_nation_command(ctx, nationName: str, population: int, gdp: int,
     else:
         await ctx.send("You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
-@bot.hybrid_command(name='update_nation', description='Update a nation in the database')
+@bot.command(name='update_nation', description='Update a nation in the database')
 async def update_nation_command(ctx, nationId: int, nationName: str, population: int, gdp: int, popGrowth: float, gdpGrowth: float):
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
@@ -125,7 +125,7 @@ async def update_nation_command(ctx, nationId: int, nationName: str, population:
     else:
         await ctx.send("You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
-@bot.hybrid_command(name='delete_nation', description='Delete a nation from the database')
+@bot.command(name='delete_nation', description='Delete a nation from the database')
 async def delete_nation_command(ctx, nationId: int):
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
@@ -139,7 +139,7 @@ async def delete_nation_command(ctx, nationId: int):
     else:
         await ctx.send("You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
-@bot.hybrid_command(name='read_all_tech', description='read entire tech database')
+@bot.command(name='read_all_tech', description='read entire tech database')
 async def read_tech_command(ctx):
     conn = db.create_conn()
     try:
@@ -150,7 +150,7 @@ async def read_tech_command(ctx):
     finally:
         conn.close()
    
-@bot.hybrid_command(name='read_one_tech', description='read techs of one nation')
+@bot.command(name='read_one_tech', description='read techs of one nation')
 async def read_one_tech_command(ctx, nation: str):
     conn = db.create_conn()
     try:
@@ -161,7 +161,7 @@ async def read_one_tech_command(ctx, nation: str):
     finally:
         conn.close()
 
-@bot.hybrid_command(name='insert_tech', description='Insert a tech into the database')
+@bot.command(name='insert_tech', description='Insert a tech into the database')
 async def insert_tech_command(ctx, techName: str, techType: str, techTemplate: str, yearDesigned: str, nationName: str):
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
@@ -175,7 +175,7 @@ async def insert_tech_command(ctx, techName: str, techType: str, techTemplate: s
     else:
         await ctx.send("You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
-@bot.hybrid_command(name='update_tech', description='Update a tech in the database')
+@bot.command(name='update_tech', description='Update a tech in the database')
 async def update_tech_command(ctx, techName: str, techType: str, techTemplate: str, yearDesigned: str):
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
@@ -189,7 +189,7 @@ async def update_tech_command(ctx, techName: str, techType: str, techTemplate: s
     else:
         await ctx.send("You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
-@bot.hybrid_command(name='delete_tech', description='Delete a tech from the database')
+@bot.command(name='delete_tech', description='Delete a tech from the database')
 async def delete_tech_command(ctx, techId: int):
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
