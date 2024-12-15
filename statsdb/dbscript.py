@@ -198,7 +198,7 @@ def read_bonus(conn, nationName=None):
         return
     try:
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM bonus WHERE nationId = %s", (nationName,))
+        cursor.execute("SELECT * FROM bonus WHERE nationName = %s", (nationName,))
         return cursor.fetchall()
     except Exception as e:
         print(f"Error: {e}")
@@ -241,9 +241,9 @@ def initiate():
             insert_bonus(conn, "Population", "-1000000", "USA", "2021-01-01", "2021-12-31", "Covid-19")
             insert_bonus(conn, "GDP", "-1000000", "China", "2021-01-01", "2021-12-31", "Covid-19")
             insert_bonus(conn, "Population", "-2000000", "China", "2021-01-01", "2021-12-31", "Covid-19")
-            print(read_bonus(conn))
-            print(read_nation(conn))
-            print(read_tech(conn))
+            print('bonus ', read_bonus(conn, 'USA'))
+            print('nation ',read_nation(conn, 'USA'))
+            print('tech ',read_tech(conn), 'USA')
 
 
     except Exception as e:
