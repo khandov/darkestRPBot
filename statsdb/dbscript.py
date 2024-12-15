@@ -213,10 +213,10 @@ def update_bonus(conn, bonusName, bonusType, value, startYear, endYear, event):
     except Exception as e:
         print(f"Error: {e}")
 
-def delete_bonus(conn, bonus):
+def delete_bonus(conn, bonusName):
     try:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM bonus WHERE bonus = %s", (bonus,))
+        cursor.execute("DELETE FROM bonus WHERE bonusName = %s", (bonusName,))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
