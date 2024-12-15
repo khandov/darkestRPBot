@@ -10,8 +10,11 @@ from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 intents = discord.Intents.default()
+intents.members = True
 intents.message_content = True
-bot = discord.Bot()
+intents.messages = True
+description = "Darkest Hour's internal RP bot"
+bot = commands.Bot(command_prefix='/', description=description, intents=intents)
 
 def my_roles(roles, which_role):
     roles = [role.name for role in roles]
