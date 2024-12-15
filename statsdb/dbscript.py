@@ -138,8 +138,8 @@ def insert_tech(conn, techName, techType, techTemplate, yearDesigned, yearInServ
     except Exception as e:
         print(f"Error: {e}")
 
-def read_tech(conn,nation=None):
-    if (nation == None):
+def read_tech(conn,nationName=None):
+    if (nationName == None):
         try:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM tech")
@@ -148,8 +148,9 @@ def read_tech(conn,nation=None):
             print(f"Error: {e}")
     else:
         try:
+            nation = read_nation(conn, nationName)
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM tech WHERE nationName = %s", (nation,))
+            cursor.execute("SELECT * FROM tech WHERE nationId = %s", (nation['nationId'],))
             return cursor.fetchone()
         except Exception as e:
             print(f"Error: {e}")
@@ -178,7 +179,7 @@ def insert_bonus(conn, bonus, value, nationName: None, startYear, endYear, post)
     try:
         cursor = conn.cursor()
         if nationName is None:
-            print(f"Error: Nation '{nationName}' not found.")
+            print(f"Error: no Nation name given.")
             return
         nation = read_nation(conn, nationName)
         if nation['nationId']:
@@ -197,9 +198,13 @@ def read_bonus(conn, nationName=None):
         print("No nation specified")
         return
     try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM bonus WHERE nationName = %s", (nationName,))
-        return cursor.fetchall()
+        nation = read_nation(conn, nationName)
+        if nation['nationId']:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM bonus WHERE nationId = %s", (nation['nationId'],))
+            return cursor.fetchall()
+        else :
+            print(f"Error: Name '{nationName}' is invalid.")
     except Exception as e:
         print(f"Error: {e}")
 
