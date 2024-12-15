@@ -12,7 +12,6 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
-intents.messages = True
 description = "Darkest Hour's internal RP bot"
 bot = commands.Bot(command_prefix='/', description=description, intents=intents)
 
