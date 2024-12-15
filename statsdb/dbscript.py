@@ -192,10 +192,13 @@ def insert_bonus(conn, bonus, value, nationName: None, startYear, endYear, post)
     except Exception as e:
         print(f"Error: {e}")
 
-def read_bonus(conn):
+def read_bonus(conn, nationName=None):
+    if(nationName == None):
+        print("No nation specified")
+        return
     try:
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM bonus")
+        cursor.execute("SELECT * FROM bonus WHERE nationId = %s", (nationName,))
         return cursor.fetchall()
     except Exception as e:
         print(f"Error: {e}")
