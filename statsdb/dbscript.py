@@ -33,7 +33,7 @@ def create_tables(conn):
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS nation (
                 nationId INT AUTO_INCREMENT PRIMARY KEY,
-                nationName TEXT,
+                nationName TEXT UNIQUE,
                 population INTEGER,
                 gdp INTEGER,
                 popGrowth FLOAT,
@@ -43,19 +43,20 @@ def create_tables(conn):
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS bonus (
                 bonusId INT AUTO_INCREMENT PRIMARY KEY,
+                bonusName TEXT UNIQUE,
                 bonus VARCHAR(255),
                 value TEXT,
                 nationId INT,
                 startYear DATE,
                 endYear DATE,
-                event TEXT,
+                post TEXT,
                 FOREIGN KEY (nationId) REFERENCES nation(nationId)
             )
         """)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS tech (
                 techId INT AUTO_INCREMENT PRIMARY KEY,
-                techName TEXT,
+                techName TEXT UNIQUE,
                 techType TEXT,
                 techTemplate TEXT,
                 yearDesigned DATE,
@@ -79,6 +80,14 @@ def insert_nation(conn, nationName, population, gdp, popGrowth, gdpGrowth):
     except Exception as e:
         print(f"Error: {e}")
 
+def read_one_nation(conn, nation):
+    try:
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM nation WHERE nationName={nation}")
+        return cursor.fetchall()
+    except Exception as e:
+        print(f"Error: {e}")
+
 def read_nation(conn):
     try:
         cursor = conn.cursor()
@@ -87,45 +96,54 @@ def read_nation(conn):
     except Exception as e:
         print(f"Error: {e}")
 
-def update_nation(conn, nationId, nationName, population, gdp, popGrowth, gdpGrowth):
+def update_nation(conn, nationName, population, gdp, popGrowth, gdpGrowth):
     try:
         cursor = conn.cursor()
         cursor.execute("""
             UPDATE nation
             SET nationName = %s, population = %s, gdp = %s, popGrowth = %s, gdpGrowth = %s
-            WHERE nationId = %s
-        """, (nationName, population, gdp, popGrowth, gdpGrowth, nationId))
+            WHERE nationName = %s
+        """, (nationName, population, gdp, popGrowth, gdpGrowth, nationName))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
 
-def delete_nation(conn, nationId):
+def delete_nation(conn, nationName):
     try:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM nation WHERE nationId = %s", (nationId,))
+        cursor.execute("DELETE FROM nation WHERE nationName = %s", (nationName,))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
 
 # CRUD functions for the tech table
-def insert_tech(conn, techName, techType, techTemplate, yearDesigned, yearInService, nationID):
+def insert_tech(conn, techName, techType, techTemplate, yearDesigned, yearInService, nationName):
     try:
         cursor = conn.cursor()
+        nationId = read_one_nation(conn, nationName).nationId
         cursor.execute("""
             INSERT INTO tech (techName, techType, techTemplate, yearDesigned, yearInService, nationID)
             VALUES (%s, %s, %s, %s, %s, %s)
-        """, (techName, techType, techTemplate, yearDesigned, yearInService, nationID))
+        """, (techName, techType, techTemplate, yearDesigned, yearInService, nationId))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
 
-def read_tech(conn):
-    try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM tech")
-        return cursor.fetchall()
-    except Exception as e:
-        print(f"Error: {e}")
+def read_tech(conn,nation=None):
+    if (nation == None):
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM tech")
+            return cursor.fetchall()
+        except Exception as e:
+            print(f"Error: {e}")
+    else:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM tech WHERE nationName = %s", (nation,))
+            return cursor.fetchall()
+        except Exception as e:
+            print(f"Error: {e}")
 
 def update_tech(conn, techId, techName, techType, techTemplate, yearDesigned, yearInService, nationID):
     try:
@@ -133,27 +151,28 @@ def update_tech(conn, techId, techName, techType, techTemplate, yearDesigned, ye
         cursor.execute("""
             UPDATE tech
             SET techName = %s, techType = %s, techTemplate = %s, yearDesigned = %s, yearInService = %s, nationID = %s
-            WHERE techId = %s
+            WHERE techName = %s
         """, (techName, techType, techTemplate, yearDesigned, yearInService, nationID, techId))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
 
-def delete_tech(conn, techId):
+def delete_tech(conn, techName):
     try:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM tech WHERE techId = %s", (techId,))
+        cursor.execute("DELETE FROM tech WHERE techId = %s", (techName,))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
 
-def insert_bonus(conn, bonus, value, nationId, startYear, endYear, event):
+def insert_bonus(conn, bonus, value, nationName, startYear, endYear, post):
     try:
         cursor = conn.cursor()
+        nationId = read_one_nation(conn, nationName).nationId
         cursor.execute("""
-            INSERT INTO bonus (bonus, value, nationId, startYear, endYear, event)
+            INSERT INTO bonus (bonus, value, nationId, startYear, endYear, post)
             VALUES (%s, %s, %s, %s, %s, %s)
-        """, (bonus, value, nationId, startYear, endYear, event))
+        """, (bonus, value, nationId, startYear, endYear, post))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
@@ -166,14 +185,15 @@ def read_bonus(conn):
     except Exception as e:
         print(f"Error: {e}")
 
-def update_bonus(conn, bonus, value, nationId, startYear, endYear, event):
+def update_bonus(conn, bonusName, bonusType, value, startYear, endYear, event):
     try:
         cursor = conn.cursor()
+        bonus = bonusName
         cursor.execute("""
             UPDATE bonus
-            SET value = %s, nationId = %s, startYear = %s, endYear = %s, event = %s
+            SET bonusName = %s, bonusType = %s, value = %s, startYear = %s, endYear = %s, event = %s
             WHERE bonus = %s
-        """, (value, nationId, startYear, endYear, event, bonus))
+        """, (bonusName, bonusType, value, startYear, endYear, event, bonus))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
