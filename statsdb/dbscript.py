@@ -80,21 +80,27 @@ def insert_nation(conn, nationName, population, gdp, popGrowth, gdpGrowth):
     except Exception as e:
         print(f"Error: {e}")
 
-def read_one_nation(conn, nation):
-    try:
-        cursor = conn.cursor()
-        cursor.execute(f"SELECT * FROM nation WHERE nationName={nation}")
-        return cursor.fetchall()
-    except Exception as e:
-        print(f"Error: {e}")
+def read_nation(conn, nation=None):
+    if(nation == None):
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM nation")
+            return cursor.fetchall()
+        except Exception as e:
+            print(f"Error: {e}")
+    else:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM nation WHERE nationName = %s", (nation,))
+            result = cursor.fetchone()
+            if result:
+                nationId, nationName, population, gdp, popGrowth, gdpGrowth = result
+                return {"nationId": nationId, "nationName": nationName, "population": population, "gdp": gdp, "popGrowth": popGrowth, "gdpGrowth": gdpGrowth}
+            else: 
+                return None
+        except Exception as e:
+            print(f"Error: {e}")
 
-def read_nation(conn):
-    try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM nation")
-        return cursor.fetchall()
-    except Exception as e:
-        print(f"Error: {e}")
 
 def update_nation(conn, nationName, population, gdp, popGrowth, gdpGrowth):
     try:
@@ -117,14 +123,17 @@ def delete_nation(conn, nationName):
         print(f"Error: {e}")
 
 # CRUD functions for the tech table
-def insert_tech(conn, techName, techType, techTemplate, yearDesigned, yearInService, nationName):
+def insert_tech(conn, techName, techType, techTemplate, yearDesigned, yearInService, nationName: None):
     try:
         cursor = conn.cursor()
-        nationId = read_one_nation(conn, nationName)[0][0]
+        if nationName is None:
+            print(f"Error: Nation '{nationName}' not found.")
+            return
+        nation = read_nation(conn, nationName)
         cursor.execute("""
-            INSERT INTO tech (techName, techType, techTemplate, yearDesigned, yearInService, nationID)
+            INSERT INTO tech (techName, techType, techTemplate, yearDesigned, yearInService, nationId)
             VALUES (%s, %s, %s, %s, %s, %s)
-        """, (techName, techType, techTemplate, yearDesigned, yearInService, nationId))
+        """, (techName, techType, techTemplate, yearDesigned, yearInService, nation['nationId']))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
@@ -141,18 +150,18 @@ def read_tech(conn,nation=None):
         try:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM tech WHERE nationName = %s", (nation,))
-            return cursor.fetchall()
+            return cursor.fetchone()
         except Exception as e:
             print(f"Error: {e}")
 
-def update_tech(conn, techId, techName, techType, techTemplate, yearDesigned, yearInService, nationID):
+def update_tech(conn, techName, techType, techTemplate, yearDesigned, yearInService, nationName):
     try:
         cursor = conn.cursor()
         cursor.execute("""
             UPDATE tech
-            SET techName = %s, techType = %s, techTemplate = %s, yearDesigned = %s, yearInService = %s, nationID = %s
+            SET techName = %s, techType = %s, techTemplate = %s, yearDesigned = %s, yearInService = %s, nationName = %s
             WHERE techName = %s
-        """, (techName, techType, techTemplate, yearDesigned, yearInService, nationID, techId))
+        """, (techName, techType, techTemplate, yearDesigned, yearInService, nationName))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
@@ -165,15 +174,21 @@ def delete_tech(conn, techName):
     except Exception as e:
         print(f"Error: {e}")
 
-def insert_bonus(conn, bonus, value, nationName, startYear, endYear, post):
+def insert_bonus(conn, bonus, value, nationName: None, startYear, endYear, post):
     try:
         cursor = conn.cursor()
-        nationId = read_one_nation(conn, nationName)[0][0]
-        cursor.execute("""
-            INSERT INTO bonus (bonus, value, nationId, startYear, endYear, post)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (bonus, value, nationId, startYear, endYear, post))
-        conn.commit()
+        if nationName is None:
+            print(f"Error: Nation '{nationName}' not found.")
+            return
+        nation = read_nation(conn, nationName)
+        if nation['nationId']:
+            cursor.execute("""
+                INSERT INTO bonus (bonus, value, nationId, startYear, endYear, post)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (bonus, value, nation['nationId'], startYear, endYear, post))
+            conn.commit()
+        else :
+            print(f"Error: Name '{nationName}' is invalid.")
     except Exception as e:
         print(f"Error: {e}")
 
@@ -217,12 +232,12 @@ def initiate():
             create_tables(conn)
             insert_nation(conn, "USA", 331002651, 21427700, 0.71, 2.27)
             insert_nation(conn, "China", 1439323776, 14342900, 0.39, 6.1)
-            insert_tech(conn, "F-22", "Fighter", "Stealth", "2005-01-01", "2005-01-01", 1)
-            insert_tech(conn, "J-20", "Fighter", "Stealth", "2011-01-01", "2011-01-01", 2)
-            insert_bonus(conn, "GDP", "-1000000", 1, "2021-01-01", "2021-12-31", "Covid-19")
-            insert_bonus(conn, "Population", "-1000000", 1, "2021-01-01", "2021-12-31", "Covid-19")
-            insert_bonus(conn, "GDP", "-1000000", 2, "2021-01-01", "2021-12-31", "Covid-19")
-            insert_bonus(conn, "Population", "-2000000", 2, "2021-01-01", "2021-12-31", "Covid-19")
+            insert_tech(conn, "F-22", "Fighter", "Stealth", "2005-01-01", "2005-01-01", "USA")
+            insert_tech(conn, "J-20", "Fighter", "Stealth", "2011-01-01", "2011-01-01", "China")
+            insert_bonus(conn, "GDP", "-1000000", "USA", "2021-01-01", "2021-12-31", "Covid-19")
+            insert_bonus(conn, "Population", "-1000000", "USA", "2021-01-01", "2021-12-31", "Covid-19")
+            insert_bonus(conn, "GDP", "-1000000", "China", "2021-01-01", "2021-12-31", "Covid-19")
+            insert_bonus(conn, "Population", "-2000000", "China", "2021-01-01", "2021-12-31", "Covid-19")
             print(read_bonus(conn))
             print(read_nation(conn))
             print(read_tech(conn))

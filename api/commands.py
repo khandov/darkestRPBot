@@ -18,11 +18,11 @@ def my_roles(roles, which_role):
     return which_role in roles
 
 @bot.hybrid_command(name='insert_bonus', description='Insert a bonus into the database')
-async def insert_bonus_command(ctx, bonus: str, value: str, nationId: str, startYear: str, endYear: str, event: str = None):
+async def insert_bonus_command(ctx, bonus: str, value: str, nationName: str, startYear: str, endYear: str, event: str = None):
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
         try:
-            db.insert_bonus(conn, bonus, value, nationId, startYear, endYear, event)
+            db.insert_bonus(conn, bonus, value, nationName, startYear, endYear, event)
             await ctx.send(f"Bonus '{bonus}' inserted successfully.", ephemeral=True)
         except Exception as e:
             await ctx.send(f"An error occurred: {e}", ephemeral=True)
@@ -76,7 +76,7 @@ async def delete_bonus_command(ctx, bonus: str):
         await ctx.send("You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
 @bot.hybrid_command(name='read_all_nation', description='read every nation')
-async def read_nation_command(ctx):
+async def read_all_nation_command(ctx):
     conn = db.create_conn()
     try:
         nations = db.read_nation(conn)
@@ -87,11 +87,11 @@ async def read_nation_command(ctx):
         conn.close()
 
 @bot.hybrid_command(name='read_one_nation', description='read a single nation by nation name')
-async def read_nation_command(ctx):
+async def read_nation_command(ctx, nationName: str):
     conn = db.create_conn()
     try:
-        nations = db.read_nation(conn)
-        await ctx.respond(f"Nations: {nations}")
+        nation = db.read_nation(conn,nationName)
+        await ctx.respond(f"Nation: {nation}")
     except Exception as e:
         await ctx.respond(f"An error occurred: {e}")
     finally:
@@ -139,7 +139,7 @@ async def delete_nation_command(ctx, nationId: int):
     else:
         await ctx.send("You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
-@bot.hybrid_command(name='read_one_tech', description='read entire tech database')
+@bot.hybrid_command(name='read_all_tech', description='read entire tech database')
 async def read_tech_command(ctx):
     conn = db.create_conn()
     try:
@@ -162,11 +162,11 @@ async def read_one_tech_command(ctx, nation: str):
         conn.close()
 
 @bot.hybrid_command(name='insert_tech', description='Insert a tech into the database')
-async def insert_tech_command(ctx, techName: str, techType: str, techTemplate: str, yearDesigned: str):
+async def insert_tech_command(ctx, techName: str, techType: str, techTemplate: str, yearDesigned: str, nationName: str):
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
         try:
-            db.insert_tech(conn, techName, techType, techTemplate, yearDesigned)
+            db.insert_tech(conn, techName, techType, techTemplate, yearDesigned, nationName)
             await ctx.send(f"Tech '{techName}' inserted successfully.", ephemeral=True)
         except Exception as e:
             await ctx.send(f"An error occurred: {e}", ephemeral=True)
@@ -176,11 +176,11 @@ async def insert_tech_command(ctx, techName: str, techType: str, techTemplate: s
         await ctx.send("You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
 @bot.hybrid_command(name='update_tech', description='Update a tech in the database')
-async def update_tech_command(ctx, techId: int, techName: str, techType: str, techTemplate: str, yearDesigned: str):
+async def update_tech_command(ctx, techName: str, techType: str, techTemplate: str, yearDesigned: str):
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
         try:
-            db.update_tech(conn, techId, techName, techType, techTemplate, yearDesigned)
+            db.update_tech(conn, techName, techType, techTemplate, yearDesigned)
             await ctx.send(f"Tech '{techName}' updated successfully.", ephemeral=True)
         except Exception as e:
             await ctx.send(f"An error occurred: {e}", ephemeral=True)
