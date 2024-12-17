@@ -6,6 +6,7 @@ from discord.ext import commands
 import statsdb.dbscript as db
 from timeModule.timeflow import update_date
 from dotenv import load_dotenv
+from tabulate import tabulate
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 intents = discord.Intents.default()
@@ -43,10 +44,14 @@ async def read_bonus_command(ctx, nation: str = None):
     try:
         if nation is None:
             bonuses = db.read_bonus(conn)
-            await send_response(ctx, f"Bonuses: {bonuses}", ephemeral=True)
+            headers = ["Bonus", "Value", "Nation", "Start Year", "End Year", "Event"]
+            table = tabulate(bonuses, headers, tablefmt="pretty")
+            await send_response(ctx, f"```\n{table}\n```", ephemeral=True)
         else:
             bonuses = db.read_bonus(conn, nation)
-            await send_response(ctx, f"Bonuses of {nation}: {bonuses}", ephemeral=True)
+            headers = ["Bonus", "Value", "Nation", "Start Year", "End Year", "Event"]
+            table = tabulate(bonuses, headers, tablefmt="pretty")
+            await send_response(ctx, f"Bonuses of {nation}: ```\n{table}\n```", ephemeral=True)
     except Exception as e:
         await send_response(ctx, f"An error occurred: {e}", ephemeral=True)
     finally:
