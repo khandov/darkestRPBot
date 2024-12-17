@@ -12,8 +12,8 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='/', intents=intents)
 
-def my_roles(roles, which_role):
-    roles = [role.name for role in roles]
+def my_roles(ctx, which_role):
+    roles = [role.name for role in ctx.author.roles]
     return which_role in roles
 
 async def send_response(ctx, message, ephemeral=False):

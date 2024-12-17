@@ -47,8 +47,8 @@ def create_tables(conn):
                 bonus VARCHAR(255),
                 value TEXT,
                 nationId INT,
-                startYear DATE,
-                endYear DATE,
+                startYear INT,
+                endYear INT,
                 post TEXT,
                 FOREIGN KEY (nationId) REFERENCES nation(nationId)
             )
