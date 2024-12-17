@@ -24,11 +24,11 @@ async def send_response(ctx, message, ephemeral=False):
 
 
 @bot.hybrid_command(name='insert_bonus', description='Insert a bonus into the database')
-async def insert_bonus_command(ctx, bonus: str, value: str, nationName: str, startYear: str, endYear: str, event: str = None):
+async def insert_bonus_command(ctx, bonus: str, value: str, nation_name: str, start_year: str, end_year: str, event: str = None):  
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
         try:
-            db.insert_bonus(conn, bonus, value, nationName, startYear, endYear, event)
+            db.insert_bonus(conn, bonus, value, nation_name, start_year, end_year, event)
             await send_response(ctx, f"Bonus '{bonus}' inserted successfully.", ephemeral=True)
         except Exception as e:
             await send_response(ctx, f"An error occurred: {e}", ephemeral=True)
@@ -91,11 +91,11 @@ async def read_all_nation_command(ctx):
     finally:
         conn.close()
 
-@bot.hybrid_command(name='read_one_nation', description='read a single nation by nation name')
-async def read_nation_command(ctx, nationName: str):
+@bot.hybrid_command(name='read_one_nation', description='Read a single nation by nation name')
+async def read_nation_command(ctx, nation_name: str):
     conn = db.create_conn()
     try:
-        nation = db.read_nation(conn,nationName)
+        nation = db.read_nation(conn,nation_name)
         await send_response(ctx,f"Nation: {nation}", ephemeral=True)
     except Exception as e:
         await send_response(ctx,f"An error occurred: {e}")
@@ -208,7 +208,7 @@ async def delete_tech_command(ctx, techName: str):
     else:
         await send_response(ctx, "You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
-@bot.command(name='update_time')
+@bot.hybrid_command(name='update_time')
 async def insert_bonus_command(startTime: str, multiplier: int):
     update_date(startTime, multiplier)
 
