@@ -30,15 +30,15 @@ async def read_bonus_command(ctx, nation: str = None):
         if nation is None:
             bonuses = db.read_bonus(conn)
             headers = ["Bonus", "Value", "Nation", "Start Year", "End Year"]
-            event = bonuses.event
-            bonuses = tuple(x for x in bonuses if x != event)
+            event = bonuses[-1]
             table = tabulate(bonuses, headers, tablefmt="pretty")
-            await send_response(ctx, f"```\n{table}\n```\n Event Link: {bonuses.event}", ephemeral=True)
+            await send_response(ctx, f"```\n{table}\n```\n Event Link: {event}", ephemeral=True)
         else:
             bonuses = db.read_bonus(conn, nation)
             headers = ["Bonus", "Value", "Nation", "Start Year", "End Year"]
+            event = bonuses[-1]
             table = tabulate(bonuses, headers, tablefmt="pretty")
-            await send_response(ctx, f"Bonuses of {nation}: ```\n{table}\n```\n Event Link: {bonuses.event}", ephemeral=True)
+            await send_response(ctx, f"Bonuses of {nation}: ```\n{table}\n```\n Event Link: {event}", ephemeral=True)
     except Exception as e:
         await send_response(ctx, f"An error occurred: {e}", ephemeral=False)
     finally:
