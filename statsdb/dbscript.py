@@ -236,7 +236,7 @@ def errorHandler(place):
 def initiate():    
     try:
         with create_conn() as conn:
-            drop_tables(conn)
+            
             create_tables(conn)
             insert_nation(conn, "USA", 331002651, 21427700, 0.71, 2.27)
             insert_nation(conn, "China", 1439323776, 14342900, 0.39, 6.1)
