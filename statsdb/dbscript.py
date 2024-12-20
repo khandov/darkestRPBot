@@ -92,12 +92,7 @@ def read_nation(conn, nation=None):
         try:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM nation WHERE nationName = %s", (nation,))
-            result = cursor.fetchone()
-            if result:
-                nationId, nationName, population, gdp, popGrowth, gdpGrowth = result
-                return {"nationId": nationId, "nationName": nationName, "population": population, "gdp": gdp, "popGrowth": popGrowth, "gdpGrowth": gdpGrowth}
-            else: 
-                return None
+            return cursor.fetchall()
         except Exception as e:
             print(f"Error: {e}")
 
