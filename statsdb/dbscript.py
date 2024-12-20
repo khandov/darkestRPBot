@@ -147,8 +147,7 @@ def read_tech(conn,nationName=None):
             nation = read_nation(conn, nationName)
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM tech WHERE nationId = %s", (nation[0],))
-            result = cursor.fetchall()
-            return result[0]
+            return cursor.fetchall()
         except Exception as e:
             print(f"Error: {e}")
 
