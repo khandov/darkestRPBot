@@ -31,12 +31,11 @@ async def read_bonus_command(ctx, nation: str = None):
             bonuses = db.read_bonus(conn)
         else:
             bonuses = db.read_bonus(conn, nation)
-        headers = ["ID", "Nation", "Bonus", "Value", "Type", "Start Year", "End Year", "Event Link"]
         formatted_bonuses = []
         for bonus in bonuses:
             formatted_bonuses.append(
                 f"**ID:** {bonus[0]}\n"
-                f"**Nation:** {bonus[1] if bonus[1] is not None else 'N/A'}\n"
+                f"**Nation:** {nation}\n"
                 f"**Bonus:** {bonus[2]}\n"
                 f"**Value:** {bonus[3]}\n"
                 f"**Type:** {bonus[4]}\n"
@@ -47,20 +46,7 @@ async def read_bonus_command(ctx, nation: str = None):
             )
         
         response_message = "\n".join(formatted_bonuses)
-        await send_response(ctx, response_message, ephemeral=True)
-
-        if nation is None:
-            bonuses = db.read_bonus(conn)
-            headers = ["Bonus", "Value", "Nation", "Start Year", "End Year"]
-            event = bonuses[-1]
-            table = tabulate(bonuses, headers, tablefmt="pretty")
-            await send_response(ctx, f"```\n{table}\n```\n Event Link: {event}", ephemeral=True)
-        else:
-            bonuses = db.read_bonus(conn, nation)
-            headers = ["Bonus", "Value", "Nation", "Start Year", "End Year"]
-            event = bonuses[-1]
-            table = tabulate(bonuses, headers, tablefmt="pretty")
-            await send_response(ctx, f"Bonuses of {nation}: ```\n{table}\n```\n Event Link: {event}", ephemeral=True)
+        await send_response(ctx, response_message, ephemeral=False)
     except Exception as e:
         await send_response(ctx, f"An error occurred: {e}", ephemeral=False)
     finally:
@@ -71,7 +57,21 @@ async def read_all_nation_command(ctx):
     conn = db.create_conn()
     try:
         nations = db.read_nation(conn)
-        await send_response(ctx,f"Nations: {nations}", ephemeral=True)
+        formatted_nations = []
+        for nation in nations:
+            formatted_nations.append(
+                f"**ID:** {nation[0]}\n"
+                f"**Name:** {nation[1]}\n"
+                f"**Population:** {nation[2]}\n"
+                f"**GDP:** {nation[3]}\n"
+                f"**Population growth:** {nation[4]}\n"
+                f"**GDP growth:** {nation[5]}\n"
+                "-----------------------------"
+            )
+        
+        response_message = "\n".join(formatted_nations)
+        await send_response(ctx, response_message, ephemeral=False)
+        
     except Exception as e:
         await send_response(ctx,f"An error occurred: {e}")
     finally:
@@ -82,7 +82,18 @@ async def read_nation_command(ctx, nation_name: str):
     conn = db.create_conn()
     try:
         nation = db.read_nation(conn,nation_name)
-        await send_response(ctx,f"Nation: {nation}", ephemeral=True)
+        if nation:
+            response_message = (
+                f"**ID:** {nation[0]}\n"
+                f"**Name:** {nation[1]}\n"
+                f"**Population:** {nation[2]}\n"
+                f"**GDP:** {nation[3]}\n"
+                f"**Population growth:** {nation[4]}\n"
+                f"**GDP growth:** {nation[5]}\n"
+                "-----------------------------"
+            )
+        await send_response(ctx, response_message, ephemeral=False)
+            
     except Exception as e:
         await send_response(ctx,f"An error occurred: {e}")
     finally:
@@ -92,7 +103,22 @@ async def read_tech_command(ctx):
     conn = db.create_conn()
     try:
         techs = db.read_tech(conn)
-        await send_response(ctx,f"Techs: {techs}")
+        formatted_techs = []
+        for tech in techs:
+            formatted_techs.append(
+                f"**Tech ID:** {tech[0]}\n"
+                f"**Tech Name:** {tech[1]}\n"
+                f"**Tech Type:** {tech[2]}\n"
+                f"**Tech Template:** {tech[3]}\n"
+                f"**Year Designed:** {tech[4]}\n"
+                f"**Year In Service:** {tech[5]}\n"
+                f"**Nation ID:** {tech[6]}\n"
+                "-----------------------------"
+            )
+        
+        response_message = "\n".join(formatted_techs)
+        await send_response(ctx, response_message, ephemeral=True)
+
     except Exception as e:
         await send_response(ctx,f"An error occurred: {e}")
     finally:
@@ -103,7 +129,23 @@ async def read_one_tech_command(ctx, nation: str):
     conn = db.create_conn()
     try:
         techs = db.read_tech(conn,nation)
-        await send_response(ctx,f"Techs of {nation}: {techs}")
+        if techs:
+            formatted_techs = []
+            for tech in techs:
+                formatted_techs.append(
+                    f"**Tech ID:** {tech[0]}\n"
+                    f"**Tech Name:** {tech[1]}\n"
+                    f"**Tech Type:** {tech[2]}\n"
+                    f"**Tech Template:** {tech[3]}\n"
+                    f"**Year Designed:** {tech[4]}\n"
+                    f"**Year In Service:** {tech[5]}\n"
+                    f"**Nation ID:** {tech[6]}\n"
+                    "-----------------------------"
+                )
+            
+            response_message = "\n".join(formatted_techs)
+            await send_response(ctx, response_message, ephemeral=False)
+
     except Exception as e:
         await send_response(ctx,f"An error occurred: {e}")
     finally:
