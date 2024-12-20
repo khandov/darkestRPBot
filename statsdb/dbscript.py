@@ -92,7 +92,8 @@ def read_nation(conn, nation=None):
         try:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM nation WHERE nationName = %s", (nation,))
-            return cursor.fetchall()
+            result = cursor.fetchall()
+            return result[0]
         except Exception as e:
             print(f"Error: {e}")
 
@@ -146,7 +147,8 @@ def read_tech(conn,nationName=None):
             nation = read_nation(conn, nationName)
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM tech WHERE nationId = %s", (nation['nationId'],))
-            return cursor.fetchone()
+            result = cursor.fetchall()
+            return result[0]
         except Exception as e:
             print(f"Error: {e}")
 
@@ -242,9 +244,9 @@ def initiate():
             insert_bonus(conn, "Population", "-1000000", "USA", "2021-01-01", "2021-12-31", "Covid-19")
             insert_bonus(conn, "GDP", "-1000000", "China", "2021-01-01", "2021-12-31", "Covid-19")
             insert_bonus(conn, "Population", "-2000000", "China", "2021-01-01", "2021-12-31", "Covid-19")
-            print('bonus ', read_bonus(conn, 'USA'))
+            
             print('nation ',read_nation(conn, 'USA'))
-            print('tech ',read_tech(conn), 'USA')
+            
 
 
     except Exception as e:
