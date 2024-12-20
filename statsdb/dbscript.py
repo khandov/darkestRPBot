@@ -129,7 +129,7 @@ def insert_tech(conn, techName, techType, techTemplate, yearDesigned, yearInServ
         cursor.execute("""
             INSERT INTO tech (techName, techType, techTemplate, yearDesigned, yearInService, nationId)
             VALUES (%s, %s, %s, %s, %s, %s)
-        """, (techName, techType, techTemplate, yearDesigned, yearInService, nation['nationId']))
+        """, (techName, techType, techTemplate, yearDesigned, yearInService, nation[0]))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
@@ -158,7 +158,7 @@ def update_tech(conn, techName, techType, techTemplate, yearDesigned, yearInServ
             UPDATE tech
             SET techName = %s, techType = %s, techTemplate = %s, yearDesigned = %s, yearInService = %s, nationName = %s
             WHERE techName = %s
-        """, (techName, techType, techTemplate, yearDesigned, yearInService, nationName))
+        """, (techName, techType, techTemplate, yearDesigned, yearInService, nationName, techName))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
@@ -199,6 +199,9 @@ def read_bonus(conn, nationName=None):
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM bonus WHERE nationId = %s", (nation[0],))
             payload = cursor.fetchall()
+            if(len(payload) == 0):
+                print(f"Error: No bonuses found for '{nationName}'.")
+                return
             return payload
         else :
             print(f"Error: Name '{nationName}' is invalid.")
@@ -208,12 +211,11 @@ def read_bonus(conn, nationName=None):
 def update_bonus(conn, bonusName, bonusType, value, startYear, endYear, event):
     try:
         cursor = conn.cursor()
-        bonus = bonusName
         cursor.execute("""
             UPDATE bonus
             SET bonusName = %s, bonusType = %s, value = %s, startYear = %s, endYear = %s, event = %s
-            WHERE bonus = %s
-        """, (bonusName, bonusType, value, startYear, endYear, event, bonus))
+            WHERE bonusName = %s
+        """, (bonusName, bonusType, value, startYear, endYear, event, bonusName))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
