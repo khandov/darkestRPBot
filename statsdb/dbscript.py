@@ -146,7 +146,7 @@ def read_tech(conn,nationName=None):
         try:
             nation = read_nation(conn, nationName)
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM tech WHERE nationId = %s", (nation['nationId'],))
+            cursor.execute("SELECT * FROM tech WHERE nationId = %s", (nation[0],))
             result = cursor.fetchall()
             return result[0]
         except Exception as e:
@@ -183,7 +183,7 @@ def insert_bonus(conn, bonus, value, nationName: None, startYear, endYear, post)
             cursor.execute("""
                 INSERT INTO bonus (bonus, value, nationId, startYear, endYear, post)
                 VALUES (%s, %s, %s, %s, %s, %s)
-            """, (bonus, value, nation['nationId'], startYear, endYear, post))
+            """, (bonus, value, nation[0], startYear, endYear, post))
             conn.commit()
         else :
             print(f"Error: Name '{nationName}' is invalid.")
@@ -196,9 +196,9 @@ def read_bonus(conn, nationName=None):
         return
     try:
         nation = read_nation(conn, nationName)
-        if nation['nationId']:
+        if nation[0]:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM bonus WHERE nationId = %s", (nation['nationId'],))
+            cursor.execute("SELECT * FROM bonus WHERE nationId = %s", (nation[0],))
             payload = cursor.fetchall()
             return payload
         else :
