@@ -202,7 +202,8 @@ def read_bonus(conn, nationName=None):
         if nation['nationId']:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM bonus WHERE nationId = %s", (nation['nationId'],))
-            return cursor.fetchall()
+            payload = cursor.fetchall()
+            return payload
         else :
             print(f"Error: Name '{nationName}' is invalid.")
     except Exception as e:

@@ -29,6 +29,28 @@ async def read_bonus_command(ctx, nation: str = None):
     try:
         if nation is None:
             bonuses = db.read_bonus(conn)
+        else:
+            bonuses = db.read_bonus(conn, nation)
+        headers = ["ID", "Nation", "Bonus", "Value", "Type", "Start Year", "End Year", "Event Link"]
+        formatted_bonuses = []
+        for bonus in bonuses:
+            formatted_bonuses.append(
+                f"**ID:** {bonus[0]}\n"
+                f"**Nation:** {bonus[1] if bonus[1] is not None else 'N/A'}\n"
+                f"**Bonus:** {bonus[2]}\n"
+                f"**Value:** {bonus[3]}\n"
+                f"**Type:** {bonus[4]}\n"
+                f"**Start Year:** {bonus[5]}\n"
+                f"**End Year:** {bonus[6]}\n"
+                f"**Event Link:** {bonus[7] if bonus[7] is not None else 'N/A'}\n"
+                "-----------------------------"
+            )
+        
+        response_message = "\n".join(formatted_bonuses)
+        await send_response(ctx, response_message, ephemeral=True)
+
+        if nation is None:
+            bonuses = db.read_bonus(conn)
             headers = ["Bonus", "Value", "Nation", "Start Year", "End Year"]
             event = bonuses[-1]
             table = tabulate(bonuses, headers, tablefmt="pretty")
