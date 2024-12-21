@@ -166,11 +166,11 @@ async def insert_bonus_command(ctx, bonus: str, value: str, nation_name: str, st
         await send_response(ctx, "You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
 @bot.hybrid_command(name='update_bonus', description='Update a bonus in the database')
-async def update_bonus_command(ctx, bonus: str, value: str, nationName: str, startYear: str, endYear: str, event: str = None):
+async def update_bonus_command(ctx, id: int, bonus: str, value: str, nation_name: str, start_year: str, end_year: str, event: str = None):
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
         try:
-            db.update_bonus(conn, bonus, value, nationName, startYear, endYear, event)
+            db.update_bonus(conn, id, bonus, value, nation_name, start_year, end_year, event)
             await send_response(ctx, f"Bonus '{bonus}' updated successfully.", ephemeral=False)
         except Exception as e:
             await send_response(ctx, f"An error occurred: {e}", ephemeral=True)
@@ -250,11 +250,11 @@ async def insert_tech_command(ctx, tech_name: str, tech_type: str, tech_template
         await send_response(ctx, "You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
 @bot.hybrid_command(name='update_tech', description='Update a tech in the database')
-async def update_tech_command(ctx, tech_name: str, tech_type: str, tech_template: str, year_designed: str, year_in_service: str, nation_name: str):
+async def update_tech_command(ctx, tech_id: int, tech_name: str, tech_type: str, tech_template: str, year_designed: str, year_in_service: str, nation_name: str):
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
         try:
-            db.update_tech(conn, tech_name, tech_type, tech_template, year_designed, year_in_service, nation_name)
+            db.update_tech(conn, tech_id, tech_name, tech_type, tech_template, year_designed, year_in_service, nation_name)
             await send_response(ctx, f"Tech '{tech_name}' updated successfully.", ephemeral=False)
         except Exception as e:
             await send_response(ctx, f"An error occurred: {e}", ephemeral=True)

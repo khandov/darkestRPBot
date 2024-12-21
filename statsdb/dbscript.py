@@ -151,14 +151,14 @@ def read_tech(conn,nationName=None):
         except Exception as e:
             print(f"Error: {e}")
 
-def update_tech(conn, techName, techType, techTemplate, yearDesigned, yearInService, nationName):
+def update_tech(conn, techId, techName, techType, techTemplate, yearDesigned, yearInService, nationName):
     try:
         cursor = conn.cursor()
         cursor.execute("""
             UPDATE tech
             SET techName = %s, techType = %s, techTemplate = %s, yearDesigned = %s, yearInService = %s, nationName = %s
-            WHERE techName = %s
-        """, (techName, techType, techTemplate, yearDesigned, yearInService, nationName, techName))
+            WHERE techId = %s
+        """, (techName, techType, techTemplate, yearDesigned, yearInService, nationName, techId))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
@@ -208,14 +208,14 @@ def read_bonus(conn, nationName=None):
     except Exception as e:
         print(f"Error: {e}")
 
-def update_bonus(conn, bonusName, bonusType, value, startYear, endYear, event):
+def update_bonus(conn, bonusId, bonusName, bonusType, value, startYear, endYear, event):
     try:
         cursor = conn.cursor()
         cursor.execute("""
             UPDATE bonus
             SET bonusName = %s, bonusType = %s, value = %s, startYear = %s, endYear = %s, event = %s
-            WHERE bonusName = %s
-        """, (bonusName, bonusType, value, startYear, endYear, event, bonusName))
+            WHERE bonusId = %s
+        """, (bonusName, bonusType, value, startYear, endYear, event, bonusId))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")

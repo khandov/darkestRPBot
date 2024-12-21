@@ -74,6 +74,12 @@ def register_global_commands():
             "description": "Update a bonus in the database",
             "options": [
                 {
+                    "name": "id",
+                    "description": "The unique id of the bonus",
+                    "type": 4,  # INTEGER
+                    "required": True
+                },
+                {
                     "name": "bonus",
                     "description": "The name of the bonus",
                     "type": 3,  # STRING
@@ -286,6 +292,12 @@ def register_global_commands():
                 {
                     "name": "year_in_service",
                     "description": "The year the tech went into service",
+                    "type": 3,  # STRING
+                    "required": True
+                },
+                {
+                    "name": "nation_name",
+                    "description": "The nation that owns the tech",
                     "type": 3,  # STRING
                     "required": True
                 }
