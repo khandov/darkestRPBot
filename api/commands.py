@@ -28,14 +28,14 @@ async def send_response(ctx, message, ephemeral=False):
         await ctx.send(message, ephemeral=ephemeral)
 
 @bot.hybrid_command(name='read_bonus', description='Read bonuses of a nation from the database. Leave nation field blank to get list of all nations')
-async def read_bonus_command(ctx, nation: str = None):
+async def read_bonus_command(ctx, nation_name: str = None):
     conn = db.create_conn()
     try:
-        if nation is None:
+        if nation_name is None:
             bonuses = db.read_bonus(conn)
         else:
-            nationFull = db.read_nation(conn, nation)
-            bonuses = db.read_bonus(conn, nationFull)
+            nation = db.read_nation(conn, nation_name)
+            bonuses = db.read_bonus(conn, nation)
         formatted_bonuses = []
         if bonuses == None:
             await send_response(ctx, "No bonuses found for the specified nation.", ephemeral=False)
