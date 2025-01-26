@@ -166,7 +166,7 @@ def update_tech(conn, techId, techName, techType, techTemplate, yearDesigned, ye
 def delete_tech(conn, techName):
     try:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM tech WHERE techId = %s", (techName,))
+        cursor.execute("DELETE FROM tech WHERE techName = %s", (techName,))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
@@ -178,7 +178,7 @@ def insert_bonus(conn, bonus, value, nationName: None, startYear, endYear, post)
             print(f"Error: no Nation name given.")
             return
         nation = read_nation(conn, nationName)
-        if nation['nationId']:
+        if nation[0]:
             cursor.execute("""
                 INSERT INTO bonus (bonus, value, nationId, startYear, endYear, post)
                 VALUES (%s, %s, %s, %s, %s, %s)
@@ -189,22 +189,21 @@ def insert_bonus(conn, bonus, value, nationName: None, startYear, endYear, post)
     except Exception as e:
         print(f"Error: {e}")
 
-def read_bonus(conn, nationName=None):
-    if(nationName == None):
+def read_bonus(conn, nation):
+    if(nation == None):
         print("No nation specified")
         return
     try:
-        nation = read_nation(conn, nationName)
         if nation[0]:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM bonus WHERE nationId = %s", (nation[0],))
             payload = cursor.fetchall()
             if(len(payload) == 0):
-                print(f"Error: No bonuses found for '{nationName}'.")
+                print(f"Error: No bonuses found for '{nation[1]}'.")
                 return
             return payload
         else :
-            print(f"Error: Name '{nationName}' is invalid.")
+            print(f"Error: Name '{nation[1]}' is invalid.")
     except Exception as e:
         print(f"Error: {e}")
 

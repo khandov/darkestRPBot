@@ -1,5 +1,9 @@
 import sys
 import os
+from datetime import datetime, timezone
+
+import time 
+import re
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import discord
 from discord.ext import commands
@@ -30,8 +34,12 @@ async def read_bonus_command(ctx, nation: str = None):
         if nation is None:
             bonuses = db.read_bonus(conn)
         else:
-            bonuses = db.read_bonus(conn, nation)
+            nationFull = db.read_nation(conn, nation)
+            bonuses = db.read_bonus(conn, nationFull)
         formatted_bonuses = []
+        if bonuses == None:
+            await send_response(ctx, "No bonuses found for the specified nation.", ephemeral=False)
+            return
         for bonus in bonuses:
             formatted_bonuses.append(
                 f"**ID:** {bonus[0]}\n"
@@ -170,7 +178,7 @@ async def update_bonus_command(ctx, id: int, bonus: str, value: str, nation_name
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
         try:
-            db.update_bonus(conn, id, bonus, value, nation_name, start_year, end_year, event)
+            db.update_bonus(conn, id, bonus, value, start_year, end_year, event)
             await send_response(ctx, f"Bonus '{bonus}' updated successfully.", ephemeral=False)
         except Exception as e:
             await send_response(ctx, f"An error occurred: {e}", ephemeral=True)
@@ -180,12 +188,12 @@ async def update_bonus_command(ctx, id: int, bonus: str, value: str, nation_name
         await send_response(ctx, "You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
 @bot.hybrid_command(name='delete_bonus', description='Delete a bonus from the database')
-async def delete_bonus_command(ctx, bonusName: str):
+async def delete_bonus_command(ctx, id: int):
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
         try:
-            db.delete_bonus(conn, bonusName)
-            await send_response(ctx, f"Bonus '{bonusName}' deleted successfully.", ephemeral=False)
+            db.delete_bonus(conn, id)
+            await send_response(ctx, f"Bonus '{id}' deleted successfully.", ephemeral=False)
         except Exception as e:
             await send_response(ctx, f"An error occurred: {e}", ephemeral=True)
         finally:
@@ -280,6 +288,40 @@ async def delete_tech_command(ctx, tech_name: str):
 @bot.hybrid_command(name='update_time')
 async def insert_bonus_command(start_time: str, multiplier: int):
     update_date(start_time, multiplier)
+
+@bot.event
+async def on_message(message):
+    if message.author.id == 1101035453710348339 and message.channel.id == 1326666766616625213:
+        if message.embeds:
+            for embed in message.embeds:
+                for field in embed.fields:
+                    timestamp_pattern = r'<t:(-?\d+):F>'
+                    match = re.search(timestamp_pattern, field.value)
+                    if match:
+                        timestamp = float(match.group(1))
+                        t = time.time()
+                        date = datetime.fromtimestamp(timestamp)
+                        print (date.year)
+                        adjust_population_and_gdp(date.year)
+    else:
+        print ("Not Zukis message")
+
+def adjust_population_and_gdp(year):
+    conn = db.create_conn()
+    nations = db.read_nation(conn)
+    for nation in nations:
+        bonuses = db.read_bonus(conn, nation[1])
+        for bonus in bonuses:
+            if bonus[5] <= year <= bonus[6]:
+                if bonus[4] == 'population':
+                    nation[2] += bonus[3]
+                elif bonus[4] == 'gdp':
+                    nation[3] += bonus[3]
+                elif bonus[4] == 'gdp growth':
+                    nation[3] *= (1+bonus[3]/100)
+                elif bonus[4] == 'pop growth':
+                    nation[2] *= (1+bonus[3]/100)
+            db.update_nation(conn, nation[1], nation[2], nation[3], nation[4], nation[5])
 
 discord_token = os.getenv('DISCORD_TOKEN')
 if discord_token is None:
