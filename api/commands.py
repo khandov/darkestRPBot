@@ -100,7 +100,9 @@ async def read_nation_command(ctx, nation_name: str):
                 f"**GDP growth:** {nation[5]}\n"
                 "-----------------------------"
             )
-        await send_response(ctx, response_message, ephemeral=False)
+            await send_response(ctx, response_message, ephemeral=False)
+        else:
+            await send_response(ctx, "No nation found with the specified name.", ephemeral=False)
             
     except Exception as e:
         await send_response(ctx,f"An error occurred: {e}")
@@ -188,12 +190,12 @@ async def update_bonus_command(ctx, id: int, bonus: str, value: str, nation_name
         await send_response(ctx, "You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
 @bot.hybrid_command(name='delete_bonus', description='Delete a bonus from the database')
-async def delete_bonus_command(ctx, id: int):
+async def delete_bonus_command(ctx, bonus: int):
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
         try:
-            db.delete_bonus(conn, id)
-            await send_response(ctx, f"Bonus '{id}' deleted successfully.", ephemeral=False)
+            db.delete_bonus(conn, bonus)
+            await send_response(ctx, f"Bonus '{bonus}' deleted successfully.", ephemeral=False)
         except Exception as e:
             await send_response(ctx, f"An error occurred: {e}", ephemeral=True)
         finally:
@@ -310,19 +312,30 @@ def adjust_population_and_gdp(year):
     conn = db.create_conn()
     nations = db.read_nation(conn)
     for nation in nations:
-        bonuses = db.read_bonus(conn, nation[1])
-        for bonus in bonuses:
-            if bonus[5] <= year <= bonus[6]:
-                if bonus[4] == 'population':
-                    nation[2] += bonus[3]
-                elif bonus[4] == 'gdp':
-                    nation[3] += bonus[3]
-                elif bonus[4] == 'gdp growth':
-                    nation[3] *= (1+bonus[3]/100)
-                elif bonus[4] == 'pop growth':
-                    nation[2] *= (1+bonus[3]/100)
-            db.update_nation(conn, nation[1], nation[2], nation[3], nation[4], nation[5])
-
+        try:
+            bonuses = db.read_bonus(conn, nation)
+            if not bonuses:
+                print(f"No bonuses found for nation {nation[1]}")
+            else:
+                print(bonuses)
+                for bonus in bonuses:
+                    if bonus[5] <= year <= bonus[6]:
+                        nation = list(nation)  # Convert tuple to list
+                        if bonus[2] == 'population':
+                            nation[2] += bonus[3]
+                        elif bonus[2] == 'gdp':
+                            nation[3] += bonus[3]
+                        elif bonus[2] == 'gdp growth':
+                            nation[3] *= (1+bonus[3]/100)
+                        elif bonus[2] == 'pop growth':
+                            nation[2] *= (1+bonus[3]/100)
+                        nation = tuple(nation)  # Convert list back to tuple
+                    db.update_nation(conn, nation[1], nation[2], nation[3], nation[4], nation[5])
+                    print(db.read_nation(conn, nation[1]))
+        
+        except Exception as e:
+            print(f"An error occurred while reading bonuses for nation {nation[1]}: {e}")
+            
 discord_token = os.getenv('DISCORD_TOKEN')
 if discord_token is None:
     raise ValueError("DISCORD_TOKEN environment variable not set")

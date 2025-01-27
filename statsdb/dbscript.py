@@ -25,6 +25,7 @@ def drop_tables(conn):
     cursor.execute("""
         DROP TABLE IF EXISTS nation
     """)
+    cursor.execute(""" DROP TABLE IF EXISTS bonus_new """)
     conn.commit()
 
 def create_tables(conn):
@@ -45,7 +46,7 @@ def create_tables(conn):
                 bonusId INT AUTO_INCREMENT PRIMARY KEY,
                 bonusName TEXT UNIQUE,
                 bonus VARCHAR(255),
-                value TEXT,
+                value INT,
                 nationId INT,
                 startYear INT,
                 endYear INT,
@@ -219,10 +220,10 @@ def update_bonus(conn, bonusId, bonusName, bonusType, value, startYear, endYear,
     except Exception as e:
         print(f"Error: {e}")
 
-def delete_bonus(conn, bonusName):
+def delete_bonus(conn, bonusId):
     try:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM bonus WHERE bonusName = %s", (bonusName,))
+        cursor.execute("DELETE FROM bonus WHERE bonusId = %s", (bonusId,))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
@@ -234,16 +235,16 @@ def errorHandler(place):
 def initiate():    
     try:
         with create_conn() as conn:
-            
+            drop_tables(conn)
             create_tables(conn)
             insert_nation(conn, "USA", 331002651, 21427700, 0.71, 2.27)
             insert_nation(conn, "China", 1439323776, 14342900, 0.39, 6.1)
             insert_tech(conn, "F-22", "Fighter", "Stealth", "2005-01-01", "2005-01-01", "USA")
             insert_tech(conn, "J-20", "Fighter", "Stealth", "2011-01-01", "2011-01-01", "China")
-            insert_bonus(conn, "GDP", "-1000000", "USA", "2021-01-01", "2021-12-31", "Covid-19")
-            insert_bonus(conn, "Population", "-1000000", "USA", "2021-01-01", "2021-12-31", "Covid-19")
-            insert_bonus(conn, "GDP", "-1000000", "China", "2021-01-01", "2021-12-31", "Covid-19")
-            insert_bonus(conn, "Population", "-2000000", "China", "2021-01-01", "2021-12-31", "Covid-19")
+            insert_bonus(conn, "gdp", "-1000000", "USA", "2021-01-01", "2021-12-31", "Covid-19")
+            insert_bonus(conn, "population", "-1000000", "USA", "2021-01-01", "2021-12-31", "Covid-19")
+            insert_bonus(conn, "gdp", "-1000000", "China", "2021-01-01", "2021-12-31", "Covid-19")
+            insert_bonus(conn, "population", "-2000000", "China", "2021-01-01", "2021-12-31", "Covid-19")
             
             print('nation ',read_nation(conn, 'USA'))
             
