@@ -318,6 +318,8 @@ def adjust_population_and_gdp(year):
     conn = db.create_conn()
     nations = db.read_nation(conn)
     for nation in nations:
+        gdpGrowth = 0
+        popGrowth = 0
         try:
             bonuses = db.read_bonus(conn, nation)
             if not bonuses:
@@ -332,9 +334,14 @@ def adjust_population_and_gdp(year):
                         elif bonus[2] == 'gdp':
                             nation[3] += bonus[3]
                         elif bonus[2] == 'gdp growth':
-                            nation[3] *= (1+bonus[3]/100)
+                            gdpGrowth += (bonus[3])
                         elif bonus[2] == 'pop growth':
-                            nation[2] *= (1+bonus[3]/100)
+                            popGrowth += (bonus[3])
+                        #apply gdp and pop growths as percentage
+                        nation[2] *= (1+popGrowth/100)
+                        nation[3] *= (1+gdpGrowth/100)
+                        nation[4] = popGrowth
+                        nation[5] = gdpGrowth
                         nation = tuple(nation)  # Convert list back to tuple
                     db.update_nation(conn, nation[1], nation[2], nation[3], nation[4], nation[5])
                     print(db.read_nation(conn, nation[1]))
