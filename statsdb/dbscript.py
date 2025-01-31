@@ -99,22 +99,48 @@ def read_nation(conn, nation=None):
             print(f"Error: {e}")
 
 
-def update_nation(conn, nationName, population, gdp, popGrowth, gdpGrowth):
+def update_nation(conn, nationName, population=None, gdp=None, popGrowth=None, gdpGrowth=None):
     try:
+        fields_to_update = []
+        values = []
+        if population is not None:
+            fields_to_update.append("population = %s")
+            values.append(population)
+        if gdp is not None:
+            fields_to_update.append("gdp = %s")
+            values.append(gdp)
+        if popGrowth is not None:
+            fields_to_update.append("popGrowth = %s")
+            values.append(popGrowth)
+        if gdpGrowth is not None:
+            fields_to_update.append("gdpGrowth = %s")
+            values.append(gdpGrowth)
+
         cursor = conn.cursor()
-        cursor.execute("""
-            UPDATE nation
-            SET nationName = %s, population = %s, gdp = %s, popGrowth = %s, gdpGrowth = %s
-            WHERE nationName = %s
-        """, (nationName, population, gdp, popGrowth, gdpGrowth, nationName))
-        conn.commit()
+        if fields_to_update:
+            query = f'''
+                UPDATE nation
+                SET {', '.join(fields_to_update)}
+                WHERE nationName = %s
+            '''
+            values.append(nationName)
+            cursor.execute(query, values)
+            conn.commit()
+        else:
+            print("No fields to update")
     except Exception as e:
         print(f"Error: {e}")
 
 def delete_nation(conn, nationName):
     try:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM nation WHERE nationName = %s", (nationName,))
+        nation = read_nation(conn, nationName)
+        #delete all techs associated with the nation
+        cursor.execute("DELETE FROM tech WHERE nationId = %s", (nation[0],))
+        #delete all bonuses associated with the nation
+        cursor.execute("DELETE FROM bonus WHERE nationId = %s", (nation[0],))
+        #finally remove the nation
+        cursor.execute("DELETE FROM nation WHERE nationId = %s", (nation[0],))
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
@@ -127,6 +153,10 @@ def insert_tech(conn, techName, techType, techTemplate, yearDesigned, yearInServ
             print(f"Error: Nation '{nationName}' not found.")
             return
         nation = read_nation(conn, nationName)
+        #convert yearDesigned to date
+        yearDesigned = yearDesigned + "-01-01"
+        #convert yearInService to date
+        yearInService = yearInService + "-01-01"
         cursor.execute("""
             INSERT INTO tech (techName, techType, techTemplate, yearDesigned, yearInService, nationId)
             VALUES (%s, %s, %s, %s, %s, %s)
@@ -152,15 +182,42 @@ def read_tech(conn,nationName=None):
         except Exception as e:
             print(f"Error: {e}")
 
-def update_tech(conn, techId, techName, techType, techTemplate, yearDesigned, yearInService, nationName):
+def update_tech(conn, techId, techName=None, techType=None, techTemplate=None, yearDesigned=None, yearInService=None, nationName=None):
     try:
+        fields_to_update = []
+        values = []
+        if techName is not None:
+            fields_to_update.append("techName = %s")
+            values.append(techName)
+        if techType is not None:
+            fields_to_update.append("techType = %s")
+            values.append(techType)
+        if techTemplate is not None:
+            fields_to_update.append("techTemplate = %s")
+            values.append(techTemplate)
+        if yearDesigned is not None:
+            fields_to_update.append("yearDesigned = %s")
+            values.append(yearDesigned)
+        if yearInService is not None:
+            fields_to_update.append("yearInService = %s")
+            values.append(yearInService)
+        if nationName is not None:
+            fields_to_update.append("nationID = %s")
+            nation = read_nation(conn, nationName)
+            values.append(nation[0])
+
         cursor = conn.cursor()
-        cursor.execute("""
-            UPDATE tech
-            SET techName = %s, techType = %s, techTemplate = %s, yearDesigned = %s, yearInService = %s, nationName = %s
-            WHERE techId = %s
-        """, (techName, techType, techTemplate, yearDesigned, yearInService, nationName, techId))
-        conn.commit()
+        if fields_to_update:
+            query = f'''
+                UPDATE tech
+                SET {', '.join(fields_to_update)}
+                WHERE techId = %s
+            '''
+            values.extend([techId])
+            cursor.execute(query, values)
+            conn.commit()
+        else:
+            print("No fields to update")
     except Exception as e:
         print(f"Error: {e}")
 
@@ -208,15 +265,42 @@ def read_bonus(conn, nation):
     except Exception as e:
         print(f"Error: {e}")
 
-def update_bonus(conn, bonusId, bonusName, bonusType, value, startYear, endYear, event):
+def update_bonus(conn, bonusId, bonusType=None, value=None, nation_name=None, startYear=None, endYear=None, event=None):
     try:
+        fields_to_update = []
+        values = []
+        if bonusType is not None:
+            fields_to_update.append("bonus = %s")
+            values.append(bonusType)
+        if value is not None:
+            fields_to_update.append("value = %s")
+            values.append(value)
+        if nation_name is not None:
+            fields_to_update.append("nationId = %s")
+            nation = read_nation(conn, nation_name)
+            values.append(nation[0])
+        if startYear is not None:
+            fields_to_update.append("startYear = %s")
+            values.append(startYear)
+        if endYear is not None:
+            fields_to_update.append("endYear = %s")
+            values.append(endYear)
+        if event is not None:
+            fields_to_update.append("event = %s")
+            values.append(event)
+
         cursor = conn.cursor()
-        cursor.execute("""
-            UPDATE bonus
-            SET bonusName = %s, bonusType = %s, value = %s, startYear = %s, endYear = %s, event = %s
-            WHERE bonusId = %s
-        """, (bonusName, bonusType, value, startYear, endYear, event, bonusId))
-        conn.commit()
+        if fields_to_update:
+            query = f'''
+                UPDATE bonus
+                SET {', '.join(fields_to_update)}
+                WHERE bonusId = %s
+            '''
+            values.append(bonusId)
+            cursor.execute(query, values)
+            conn.commit()
+        else:
+            print("No fields to update")
     except Exception as e:
         print(f"Error: {e}")
 
