@@ -16,7 +16,8 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='/', intents=intents)
-
+timeMessage: int = None
+log_id: int = None
 def my_roles(ctx, which_role):
     roles = [role.name for role in ctx.author.roles]
     return which_role in roles
@@ -297,9 +298,21 @@ async def delete_tech_command(ctx, tech_name: str):
 async def insert_bonus_command(start_time: str, multiplier: int):
     update_date(start_time, multiplier)
 
+@bot.hybrid_command(name='set_time_tracking_channel', description='Provide channel id where the app will listen for time messages')
+async def setTimeMessage(ctx, channel_id: str):
+    global timeMessage
+    timeMessage = int(channel_id)
+    await send_response(ctx, f"Time tracking channel ID is now {timeMessage}")
+@bot.hybrid_command(name='set_log_channel', description='Set the channel for logs. Use the channel ID')
+async def setTimeMessage(ctx, channel_id: str):
+    global log_id
+    log_id = int(channel_id)
+    await send_response(ctx, f"Log channel ID is now {log_id}")
+
 @bot.event
 async def on_message(message):
-    if message.author.id == 1101035453710348339 and message.channel.id == 1326666766616625213:
+    global timeMessage
+    if message.author.id == 1101035453710348339 and message.channel.id == timeMessage:
         if message.embeds:
             for embed in message.embeds:
                 for field in embed.fields:
@@ -310,11 +323,13 @@ async def on_message(message):
                         t = time.time()
                         date = datetime.fromtimestamp(timestamp)
                         print (date.year)
-                        adjust_population_and_gdp(date.year)
+                        await adjust_population_and_gdp(date.year)
     else:
         print ("Not Zukis message")
 
-def adjust_population_and_gdp(year):
+
+async def adjust_population_and_gdp(year):
+    global log_id
     conn = db.create_conn()
     nations = db.read_nation(conn)
     for nation in nations:
@@ -334,21 +349,22 @@ def adjust_population_and_gdp(year):
                         elif bonus[2] == 'gdp':
                             nation[3] += bonus[3]
                         elif bonus[2] == 'gdp growth':
-                            gdpGrowth += (bonus[3])
-                        elif bonus[2] == 'pop growth':
-                            popGrowth += (bonus[3])
-                        #apply gdp and pop growths as percentage
-                        nation[2] *= (1+popGrowth/100)
-                        nation[3] *= (1+gdpGrowth/100)
-                        nation[4] = popGrowth
-                        nation[5] = gdpGrowth
-                        nation = tuple(nation)  # Convert list back to tuple
-                    db.update_nation(conn, nation[1], nation[2], nation[3], nation[4], nation[5])
-                    print(db.read_nation(conn, nation[1]))
-        
+                            gdpGrowth += bonus[3]
+                        elif bonus[2] == 'population growth':
+                            popGrowth += bonus[3]
+            #apply gdp and pop growths as percentage
+            nation[2] *= (1+popGrowth/100)
+            nation[3] *= (1+gdpGrowth/100)
+            nation[4] = popGrowth
+            nation[5] = gdpGrowth
+            nation = tuple(nation)  # Convert list back to tuple
+            db.update_nation(conn, nation[1], nation[2], nation[3], nation[4], nation[5])
         except Exception as e:
             print(f"An error occurred while reading bonuses for nation {nation[1]}: {e}")
-            
+    channel = bot.get_channel(log_id)
+    if channel:
+        await channel.send(f"Population and GDP updated successfully. Year: {year}. Listening channel: {timeMessage}")
+
 discord_token = os.getenv('DISCORD_TOKEN')
 if discord_token is None:
     raise ValueError("DISCORD_TOKEN environment variable not set")

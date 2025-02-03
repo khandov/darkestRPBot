@@ -2,13 +2,14 @@ import time
 import requests
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from dotenv import load_dotenv
-load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 discord_bot_token = os.getenv('DISCORD_TOKEN')
 discord_client_id = os.getenv('APP_ID')
 def update_global_commands():
     commands_to_update = [
+        
         {
             "name": "insert_bonus",
             "description": "Insert a bonus into the database",
@@ -186,6 +187,30 @@ def register_global_commands():
     }
 
     commands = [
+         {
+            "name": "set_time_tracking_channel",
+            "description": "Set the channel for tracking zuki.time. Use the channel ID",
+            "options": [
+                {
+                    "name": "channel_id",
+                    "description": "The ID of the channel",
+                    "type": 3,  # STRING
+                    "required": True
+                }
+            ]
+        },
+        {
+            "name": "set_log_channel",
+            "description": "Set the channel for logs. Use the channel ID",
+            "options": [
+                {
+                    "name": "channel_id",
+                    "description": "The ID of the channel",
+                    "type": 3,  # STRING
+                    "required": True
+                }
+            ]
+        },
         {
             "name": "insert_bonus",
             "description": "Insert a bonus into the database",
@@ -556,16 +581,16 @@ def register_global_commands():
         time.sleep(4)
 def update_new_commands():
     commands = {
-        "name": "read_bonus",
-        "description": "Read bonuses of a nation from the database.",
-        "options": [
-            {
-                "name": "nation_name",
-                "description": "The name of the nation",
-                "type": 3,  # STRING
-                "required": True
-            }
-        ]
+            "name": "set_time_tracking_channel",
+            "description": "Set the channel for tracking zuki.time. Use the channel ID",
+            "options": [
+                {
+                    "name": "channel_id",
+                    "description": "The ID of the channel",
+                    "type": 3,  # STRING
+                    "required": True
+                }
+            ]
     }
     url = f"https://discord.com/api/v10/applications/{discord_client_id}/commands"
     headers = {

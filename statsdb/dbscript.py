@@ -25,7 +25,6 @@ def drop_tables(conn):
     cursor.execute("""
         DROP TABLE IF EXISTS nation
     """)
-    cursor.execute(""" DROP TABLE IF EXISTS bonus_new """)
     conn.commit()
 
 def create_tables(conn):
@@ -35,8 +34,8 @@ def create_tables(conn):
             CREATE TABLE IF NOT EXISTS nation (
                 nationId INT AUTO_INCREMENT PRIMARY KEY,
                 nationName TEXT UNIQUE,
-                population INTEGER,
-                gdp INTEGER,
+                population BIGINT,
+                gdp BIGINT,
                 popGrowth FLOAT,
                 gdpGrowth FLOAT
             )
@@ -46,7 +45,7 @@ def create_tables(conn):
                 bonusId INT AUTO_INCREMENT PRIMARY KEY,
                 bonusName TEXT UNIQUE,
                 bonus VARCHAR(255),
-                value INT,
+                value BIGINT,
                 nationId INT,
                 startYear INT,
                 endYear INT,
@@ -315,6 +314,17 @@ def delete_bonus(conn, bonusId):
 
 def errorHandler(place):
     print("At"+ place + " An error occurred:")
+
+def alterDatabase():
+    try:
+        with create_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute("ALTER TABLE nation MODIFY gdp BIGINT")
+            cursor.execute("ALTER TABLE nation MODIFY population BIGINT")
+            cursor.execute("ALTER TABLE bonus MODIFY value BIGINT")
+            
+    except Exception as e:
+        print("Failed to open database:",e)
 
 def initiate():    
     try:
