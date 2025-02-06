@@ -18,6 +18,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='/', intents=intents)
 timeMessage: int = None
 log_id: int = None
+rpYear = None
 def my_roles(ctx, which_role):
     roles = [role.name for role in ctx.author.roles]
     return which_role in roles
@@ -315,15 +316,16 @@ async def on_message(message):
     if message.author.id == 1101035453710348339 and message.channel.id == timeMessage:
         if message.embeds:
             for embed in message.embeds:
-                for field in embed.fields:
-                    timestamp_pattern = r'<t:(-?\d+):F>'
-                    match = re.search(timestamp_pattern, field.value)
-                    if match:
-                        timestamp = float(match.group(1))
-                        t = time.time()
-                        date = datetime.fromtimestamp(timestamp)
-                        print (date.year)
-                        await adjust_population_and_gdp(date.year)
+                    for field in embed.fields:
+                        timestamp_pattern = r'<t:(-?\d+):F>'
+                        match = re.search(timestamp_pattern, field.value)
+                        if match:
+                            timestamp = float(match.group(1))
+                            date = datetime.fromtimestamp(timestamp)
+                            print (date.year)
+                            if(date.year != rpYear):
+                                rpYear = date.year
+                                await adjust_population_and_gdp(date.year)
     else:
         print ("Not Zukis message")
 
