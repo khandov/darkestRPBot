@@ -65,6 +65,13 @@ def create_tables(conn):
                 FOREIGN KEY (nationID) REFERENCES nation(nationId)
             )
         """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS date (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                date TEXT NOT NULL
+            )
+        """)
         conn.commit()
     except Exception as e:
         print(f"Error: {e}")
@@ -325,6 +332,30 @@ def alterDatabase():
             
     except Exception as e:
         print("Failed to open database:",e)
+
+def updateDate(conn, date):
+    try:
+        checkExists = getDate(conn)
+        if checkExists == -1:
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO date (name, date) VALUES (%s, %s)", ('darkesthour', date))
+            conn.commit()
+        else:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE date SET date = %s WHERE name = darkesthour", (date,))
+            conn.commit()
+    except Exception as e:
+        print(f"Error: {e}")
+
+def getDate(conn):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT date FROM date WHERE name = darkesthour")
+        conn.commit()
+        row = cursor.fetchone()
+        return row[0] if row else -1
+    except Exception as e:
+        print(f"Error: {e}")
 
 def initiate():    
     try:

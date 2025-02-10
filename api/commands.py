@@ -18,7 +18,6 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='/', intents=intents)
 timeMessage: int = None
 log_id: int = None
-rpYear = None
 def my_roles(ctx, which_role):
     roles = [role.name for role in ctx.author.roles]
     return which_role in roles
@@ -304,11 +303,23 @@ async def setTimeMessage(ctx, channel_id: str):
     global timeMessage
     timeMessage = int(channel_id)
     await send_response(ctx, f"Time tracking channel ID is now {timeMessage}")
+
 @bot.hybrid_command(name='set_log_channel', description='Set the channel for logs. Use the channel ID')
 async def setTimeMessage(ctx, channel_id: str):
     global log_id
     log_id = int(channel_id)
     await send_response(ctx, f"Log channel ID is now {log_id}")
+
+@bot.hybrid_command(name='set_rp_year', description='Set the year of the roleplay. Must do after bot (re)start')
+async def setTimeMessage(ctx, year: int):
+    global rpYear
+    rpYear = int(year)
+    await send_response(ctx, f"Year is now {year}")
+
+@bot.hybrid_command(name='process_year', description='fires off GDP and population growths for the year given. Ideally, you will never use it')
+async def setTimeMessage(ctx, year: int):
+    adjust_population_and_gdp(year)
+    await send_response(ctx, f"growths for year {year} processed")
 
 @bot.event
 async def on_message(message):
@@ -322,25 +333,26 @@ async def on_message(message):
                         if match:
                             timestamp = float(match.group(1))
                             date = datetime.fromtimestamp(timestamp)
-                            print (date.year)
+                            rpYear = db.getDate()
                             if(date.year != rpYear):
-                                rpYear = date.year
-                                await adjust_population_and_gdp(date.year)
+                                db.updateDate(date.year)
+                                await adjust_population_and_gdp(rpYear)
     else:
         print ("Not Zukis message")
 
 
 async def adjust_population_and_gdp(year):
     global log_id
+    channel = bot.get_channel(log_id)
     conn = db.create_conn()
     nations = db.read_nation(conn)
     for nation in nations:
-        gdpGrowth = 0
-        popGrowth = 0
+        gdpGrowth = nation[5]
+        popGrowth = nation[4]
         try:
             bonuses = db.read_bonus(conn, nation)
             if not bonuses:
-                print(f"No bonuses found for nation {nation[1]}")
+                await channel.send((f"No bonuses found for nation {nation[1]}"))
             else:
                 print(bonuses)
                 for bonus in bonuses:
@@ -361,6 +373,18 @@ async def adjust_population_and_gdp(year):
             nation[5] = gdpGrowth
             nation = tuple(nation)  # Convert list back to tuple
             db.update_nation(conn, nation[1], nation[2], nation[3], nation[4], nation[5])
+            if channel:
+                response_message = (
+                f"**ID:** {nation[0]}\n"
+                f"**Name:** {nation[1]}\n"
+                f"**Population:** {nation[2]}\n"
+                f"**GDP:** {nation[3]}\n"
+                f"**Population growth:** {nation[4]}\n"
+                f"**GDP growth:** {nation[5]}\n"
+                "-----------------------------"
+                 )
+                await channel.send(f"Population and GDP updated for nation {nation[1]}. Year: {year}.\n {response_message}")
+            time.sleep(2)
         except Exception as e:
             print(f"An error occurred while reading bonuses for nation {nation[1]}: {e}")
     channel = bot.get_channel(log_id)
