@@ -78,7 +78,14 @@ async def read_all_nation_command(ctx):
             )
         
         response_message = "\n".join(formatted_nations)
-        await send_response(ctx, response_message, ephemeral=False)
+        # Split the response message if it exceeds 2000 characters
+        if len(response_message) > 2000:
+            parts = [response_message[i:i+2000] for i in range(0, len(response_message), 2000)]
+            for part in parts:
+                await send_response(ctx, part, ephemeral=False)
+                time.sleep(2)
+        else:
+            await send_response(ctx, response_message, ephemeral=False)
         
     except Exception as e:
         await send_response(ctx,f"An error occurred: {e}")
@@ -130,7 +137,14 @@ async def read_tech_command(ctx):
             )
         
         response_message = "\n".join(formatted_techs)
-        await send_response(ctx, response_message, ephemeral=False)
+        # Split the response message if it exceeds 2000 characters
+        if len(response_message) > 2000:
+            parts = [response_message[i:i+2000] for i in range(0, len(response_message), 2000)]
+            for part in parts:
+                await send_response(ctx, part, ephemeral=False)
+                time.sleep(2)
+        else:
+            await send_response(ctx, response_message, ephemeral=False)
 
     except Exception as e:
         await send_response(ctx,f"An error occurred: {e}")
@@ -215,8 +229,8 @@ async def insert_nation_command(ctx, nation_name: str, population: int, gdp: int
     if my_roles(ctx, "Gamemaster"):
         conn = db.create_conn()
         try:
-            db.insert_nation(conn, nation_name, population, gdp, pop_growth, gdp_growth)
-            await send_response(ctx, f"Nation '{nation_name}' inserted successfully.", ephemeral=False)
+            payload = db.insert_nation(conn, nation_name, population, gdp, pop_growth, gdp_growth)
+            await send_response(ctx, payload, ephemeral=False)
         except Exception as e:
             await send_response(ctx, f"An error occurred: {e}", ephemeral=True)
         finally:
@@ -305,20 +319,20 @@ async def setTimeMessage(ctx, channel_id: str):
     await send_response(ctx, f"Time tracking channel ID is now {timeMessage}")
 
 @bot.hybrid_command(name='set_log_channel', description='Set the channel for logs. Use the channel ID')
-async def setTimeMessage(ctx, channel_id: str):
+async def setLogChannel(ctx, channel_id: str):
     global log_id
     log_id = int(channel_id)
     await send_response(ctx, f"Log channel ID is now {log_id}")
 
 @bot.hybrid_command(name='set_rp_year', description='Set the year of the roleplay. Must do after bot (re)start')
-async def setTimeMessage(ctx, year: int):
+async def setRpYear(ctx, year: int):
     global rpYear
     rpYear = int(year)
     await send_response(ctx, f"Year is now {year}")
 
 @bot.hybrid_command(name='process_year', description='fires off GDP and population growths for the year given. Ideally, you will never use it')
-async def setTimeMessage(ctx, year: int):
-    adjust_population_and_gdp(year)
+async def process_year(ctx, year: int):
+    await adjust_population_and_gdp(year)
     await send_response(ctx, f"growths for year {year} processed")
 
 @bot.event
@@ -347,17 +361,17 @@ async def adjust_population_and_gdp(year):
     conn = db.create_conn()
     nations = db.read_nation(conn)
     for nation in nations:
-        gdpGrowth = nation[5]
-        popGrowth = nation[4]
+        gdpGrowth = 0
+        popGrowth = 0
         try:
             bonuses = db.read_bonus(conn, nation)
+            nation = list(nation)  # Convert tuple to list
             if not bonuses:
-                await channel.send((f"No bonuses found for nation {nation[1]}"))
+                await channel.send((f"No bonuses found for nation {nation[1]}"))    
             else:
                 print(bonuses)
                 for bonus in bonuses:
                     if bonus[5] <= year <= bonus[6]:
-                        nation = list(nation)  # Convert tuple to list
                         if bonus[2] == 'population':
                             nation[2] += bonus[3]
                         elif bonus[2] == 'gdp':
@@ -379,15 +393,14 @@ async def adjust_population_and_gdp(year):
                 f"**Name:** {nation[1]}\n"
                 f"**Population:** {nation[2]}\n"
                 f"**GDP:** {nation[3]}\n"
-                f"**Population growth:** {nation[4]}\n"
-                f"**GDP growth:** {nation[5]}\n"
+                f"**Population growth:** {nation[4]} %\n"
+                f"**GDP growth:** {nation[5]} %\n"
                 "-----------------------------"
                  )
                 await channel.send(f"Population and GDP updated for nation {nation[1]}. Year: {year}.\n {response_message}")
-            time.sleep(2)
+                time.sleep(2)
         except Exception as e:
             print(f"An error occurred while reading bonuses for nation {nation[1]}: {e}")
-    channel = bot.get_channel(log_id)
     if channel:
         await channel.send(f"Population and GDP updated successfully. Year: {year}. Listening channel: {timeMessage}")
 

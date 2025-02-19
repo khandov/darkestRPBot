@@ -1,14 +1,20 @@
 __package__ = "db"
 
 import mysql.connector
+import json
+import sys
+import os
+from dotenv import load_dotenv
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 def create_conn():
     conn = mysql.connector.connect(
-        host='mysql.db.bot-hosting.net',
-        port=3306,
-        user='u230695_eE0kHIvC39',
-        password='iw59b.Sx+Q@j91^AzDEHv9t^',
-        database='s230695_dhDB'
+        host=os.getenv('HOST'),
+        port=os.getenv('PORT'),
+        user=os.getenv('USER'),
+        password=os.getenv('PASSWORD'),
+        database=os.getenv('DATABASE')
     )
     if conn.is_connected():
         return conn
@@ -84,6 +90,9 @@ def insert_nation(conn, nationName, population, gdp, popGrowth, gdpGrowth):
             VALUES (%s, %s, %s, %s, %s)
         """, (nationName, population, gdp, popGrowth, gdpGrowth))
         conn.commit()
+        return f"Nation {nationName} added successfully"	
+    except mysql.connector.Error as sql_error:
+        return f"SQL error: {sql_error}"
     except Exception as e:
         print(f"Error: {e}")
 
@@ -318,7 +327,6 @@ def delete_bonus(conn, bonusId):
     except Exception as e:
         print(f"Error: {e}")
 
-
 def errorHandler(place):
     print("At"+ place + " An error occurred:")
 
@@ -357,23 +365,56 @@ def getDate(conn):
     except Exception as e:
         print(f"Error: {e}")
 
-def initiate():    
+def backupDatabase():
     try:
         with create_conn() as conn:
-            drop_tables(conn)
-            create_tables(conn)
-            insert_nation(conn, "USA", 331002651, 21427700, 0.71, 2.27)
-            insert_nation(conn, "China", 1439323776, 14342900, 0.39, 6.1)
-            insert_tech(conn, "F-22", "Fighter", "Stealth", "2005-01-01", "2005-01-01", "USA")
-            insert_tech(conn, "J-20", "Fighter", "Stealth", "2011-01-01", "2011-01-01", "China")
-            insert_bonus(conn, "gdp", "-1000000", "USA", "2021-01-01", "2021-12-31", "Covid-19")
-            insert_bonus(conn, "population", "-1000000", "USA", "2021-01-01", "2021-12-31", "Covid-19")
-            insert_bonus(conn, "gdp", "-1000000", "China", "2021-01-01", "2021-12-31", "Covid-19")
-            insert_bonus(conn, "population", "-2000000", "China", "2021-01-01", "2021-12-31", "Covid-19")
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM nation")
+            nations = cursor.fetchall()
+            cursor.execute("SELECT * FROM tech")
+            techs = cursor.fetchall()
+            cursor.execute("SELECT * FROM bonus")
+            bonuses = cursor.fetchall()
+            cursor.execute("SELECT * FROM date")
+            date = cursor.fetchall()
             
-            print('nation ',read_nation(conn, 'USA'))
+            backup_data = {
+                "nations": nations,
+                "techs": techs,
+                "bonuses": bonuses,
+                "date": date
+            }
             
-
-
+            with open('backup.json', 'w') as f:
+                json.dump(backup_data, f)
+                
+            print("Backup successful")
     except Exception as e:
-        print("Failed to open database:",e)
+        print("Failed to open database:", e)
+
+def restoreDatabase():
+    try:
+        with open('backup.json', 'r') as f:
+            backup_data = json.load(f)
+            
+        with create_conn() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SET FOREIGN_KEY_CHECKS = 0;")
+            cursor.execute("TRUNCATE TABLE nation")
+            cursor.execute("TRUNCATE TABLE tech")
+            cursor.execute("TRUNCATE TABLE bonus")
+            cursor.execute("TRUNCATE TABLE date")
+            cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
+            for nation in backup_data["nations"]:
+                cursor.execute("INSERT INTO nation (nationId, nationName, population, gdp, popGrowth, gdpGrowth) VALUES (%s, %s, %s, %s, %s, %s)", nation)
+            for tech in backup_data["techs"]:
+                cursor.execute("INSERT INTO tech (techId, techName, techType, techTemplate, yearDesigned, yearInService, nationId) VALUES (%s, %s, %s, %s, %s, %s, %s)", tech)
+            for bonus in backup_data["bonuses"]:
+                cursor.execute("INSERT INTO bonus (bonusId, bonusName, bonus, value, nationId, startYear, endYear, post) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", bonus)
+            for date in backup_data["date"]:
+                cursor.execute("INSERT INTO date (id, name, date) VALUES (%s, %s, %s)", date)
+                
+            conn.commit()
+            print("Restore successful")
+    except Exception as e:
+        print("Failed to restore database:", e)
