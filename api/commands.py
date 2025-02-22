@@ -332,8 +332,11 @@ async def setRpYear(ctx, year: int):
 
 @bot.hybrid_command(name='process_year', description='fires off GDP and population growths for the year given. Ideally, you will never use it')
 async def process_year(ctx, year: int):
-    await adjust_population_and_gdp(year)
-    await send_response(ctx, f"growths for year {year} processed")
+    if my_roles(ctx, "Gamemaster"):
+        await adjust_population_and_gdp(year)
+        await send_response(ctx, f"growths for year {year} processed")
+    else:
+        await send_response(ctx, "You do not have the required role to perform this action. You need 'Gamemaster' role.", ephemeral=True)
 
 @bot.event
 async def on_message(message):
